@@ -1,9 +1,20 @@
 {
-  "name": "@zaptic/saml",
+  "name": "@zaptic-external/saml",
   "version": "0.0.1",
   "description": "Minimal saml service provider with support for sp-initiated redirect login only",
   "main": "dist/src/service-provider.js",
+  "types" : "dist/src/service-provider.d.ts",
   "author": "Ben <ben@zaptic.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zaptic/saml"
+  },
+  "keywords": [
+    "saml"
+  ],
+  "bugs": {
+    "url": "https://github.com/Zaptic/saml/issues"
+  },
   "license": "MIT",
   "scripts": {
     "prettier": "prettier --config prettier.config.js '**' --write",
