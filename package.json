@@ -1,0 +1,30 @@
+{
+  "name": "@zaptic/saml",
+  "version": "0.0.1",
+  "description": "Minimal saml service provider with support for sp-initiated redirect login only",
+  "main": "dist/src/service-provider.js",
+  "author": "Ben <ben@zaptic.com>",
+  "license": "MIT",
+  "scripts": {
+    "prettier": "prettier --config prettier.config.js '**' --write",
+    "lint": "tslint -c tslint.json --project tsconfig.json",
+    "test": "mocha --colors --require source-map-support/register --ui bdd $(find dist/ -name '*.js' -path '*/spec/*')"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.4",
+    "@types/node": "^10.5.2",
+    "@types/xmldom": "^0.1.29",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "prettier": "^1.13.7",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.2"
+  },
+  "dependencies": {
+    "libxml-xsd": "^0.5.2",
+    "xml-crypto": "^0.10.1",
+    "xmldom": "^0.1.27",
+    "xpath": "^0.0.27"
+  }
+}

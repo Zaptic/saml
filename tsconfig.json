@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "ES6",
+        "strict": true,
+        "outDir": "./dist",
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "experimentalDecorators": true,
+        "declaration": true,
+        "noErrorTruncation": true,
+        "sourceMap": true,
+        "skipLibCheck": true,
+        "lib": ["ES2017"],
+        "typeRoots": ["./node_modules/@types", "./types"]
+    },
+    "include": ["spec", "src", "types"],
+    "exclude": ["node_modules", "dist"]
+}
