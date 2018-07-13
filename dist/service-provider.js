@@ -133,6 +133,5 @@ const getLoginXML = (id, options) => `<samlp:AuthnRequest
             xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
             xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
         <saml:Issuer>${options.sp.id}</saml:Issuer>
-        <samlp:NameIDPolicy AllowCreate="false" Format="${options.nameIdFormat}"/>
     </samlp:AuthnRequest>`.replace(/>\n */g, '>'); // Remove formatting to make sure it does not the redirect request
 //# sourceMappingURL=service-provider.js.map
