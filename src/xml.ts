@@ -35,8 +35,8 @@ export function loadXSD(toLoad: string) {
         const cwd = path.resolve('')
 
         // see https://github.com/albanm/node-libxml-xsd/issues/11#issuecomment-242591323
-        process.chdir(path.resolve('./resources/'))
-        xsd.parseFile(path.resolve(`./${toLoad}`), (error, schema) => {
+        process.chdir(path.resolve(__dirname, '../resources/'))
+        xsd.parseFile(path.resolve(toLoad), (error, schema) => {
             process.chdir(cwd)
             if (error) return reject(error)
             resolve(schema)

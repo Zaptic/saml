@@ -11,11 +11,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
 const chai_1 = require("chai");
-const service_provider_1 = require("../src/service-provider");
+const service_provider_1 = require("../service-provider");
 const querystring = require("querystring");
-const helpers_1 = require("../src/helpers");
-const testCert = fs.readFileSync(path.resolve('./spec/resources/cert.pem'), 'utf8');
-const testKey = fs.readFileSync(path.resolve('./spec/resources/key.pem'), 'utf8');
+const helpers_1 = require("../helpers");
+const testCert = fs.readFileSync(path.resolve('./src/spec/resources/cert.pem'), 'utf8');
+const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8');
 function validateSchema(schema, xml) {
     return new Promise(resolve => {
         schema.validate(xml, (technicalErrors, validationErrors) => {

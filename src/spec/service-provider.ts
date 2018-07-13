@@ -1,13 +1,13 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { assert } from 'chai'
-import SAMLProvider from '../src/service-provider'
+import SAMLProvider from '../service-provider'
 import * as querystring from 'querystring'
-import { fromBase64 } from '../src/helpers'
+import { fromBase64 } from '../helpers'
 import * as xsd from 'libxml-xsd'
 
-const testCert = fs.readFileSync(path.resolve('./spec/resources/cert.pem'), 'utf8')
-const testKey = fs.readFileSync(path.resolve('./spec/resources/key.pem'), 'utf8')
+const testCert = fs.readFileSync(path.resolve('./src/spec/resources/cert.pem'), 'utf8')
+const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8')
 
 function validateSchema(schema: { validate: xsd.ValidateFunction }, xml: string) {
     return new Promise(resolve => {

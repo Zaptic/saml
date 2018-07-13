@@ -14,6 +14,6 @@
         "lib": ["ES2017"],
         "typeRoots": ["./node_modules/@types", "./types"]
     },
-    "include": ["spec", "src", "types"],
+    "include": ["src", "types"],
     "exclude": ["node_modules", "dist"]
 }
