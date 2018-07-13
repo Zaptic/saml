@@ -26,7 +26,7 @@ type SPOptions = {
     }
 }
 
-type Options = {
+export type Options = {
     attributeMapping?: { [key: string]: XPath }
     strictTimeCheck?: boolean
     nameIdFormat?: string
@@ -76,7 +76,7 @@ export default class SAMLProvider {
         const response: string = query.SAMLResponse && fromBase64(query.SAMLResponse)
 
         // Check that the response is not empty
-        if (!response) return false
+        if (!response) throw new Error('Empty SAMLResponse')
 
         // Check that the xml is valid
         await new Promise((resolve, reject) => {
