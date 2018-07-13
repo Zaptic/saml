@@ -1,0 +1,13 @@
+# Hidden files
+.*
+
+# Build folders
+dist
+
+# Yarn files
+yarn-error.log
+yarn.lock
+
+# File extensions
+*.xsd
+*.pem
