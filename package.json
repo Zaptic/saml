@@ -18,6 +18,7 @@
     "license": "MIT",
     "scripts": {
         "prettier": "prettier --config prettier.config.js '**' --write",
+        "release": "rm -rf dist/ && tsc && yarn test && yarn run prettier && yarn run lint && yarn publish --access public",
         "lint": "tslint -c tslint.json --project tsconfig.json",
         "test": "mocha --colors --require source-map-support/register --ui bdd $(find dist/ -name '*.js' -path '*/spec/*')"
     },

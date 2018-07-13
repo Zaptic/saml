@@ -53,7 +53,7 @@ describe('SAMLProvider', function () {
             const provider = new service_provider_1.default(options);
             yield provider.init();
             const metadata = provider.getMetadata();
-            yield validateSchema(yield provider.metadataShema, metadata);
+            yield validateSchema(provider.metadataShema, metadata);
         });
     });
     it('should generate a valid signed login request', function () {
@@ -70,7 +70,7 @@ describe('SAMLProvider', function () {
             const request = helpers_1.fromBase64(SAMLRequest);
             // Ths is naive but should be enough for now
             chai_1.assert.include(request, 'Signature', 'Request should be signed');
-            yield validateSchema(yield provider.protocolSchema, request);
+            yield validateSchema(provider.protocolSchema, request);
         });
     });
     it('should generate a valid non-signed login request', function () {
@@ -87,7 +87,7 @@ describe('SAMLProvider', function () {
             const request = helpers_1.fromBase64(SAMLRequest);
             // Ths is naive but should be enough for now
             chai_1.assert.notInclude(request, 'Signature', 'Request should not signed');
-            yield validateSchema(yield provider.protocolSchema, request);
+            yield validateSchema(provider.protocolSchema, request);
         });
     });
 });

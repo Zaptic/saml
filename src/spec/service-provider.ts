@@ -49,7 +49,7 @@ describe('SAMLProvider', function() {
 
         const metadata = provider.getMetadata()
 
-        await validateSchema(await provider.metadataShema!, metadata)
+        await validateSchema(provider.metadataShema!, metadata)
     })
 
     it('should generate a valid signed login request', async function() {
@@ -72,7 +72,7 @@ describe('SAMLProvider', function() {
         // Ths is naive but should be enough for now
         assert.include(request, 'Signature', 'Request should be signed')
 
-        await validateSchema(await provider.protocolSchema!, request)
+        await validateSchema(provider.protocolSchema!, request)
     })
 
     it('should generate a valid non-signed login request', async function() {
@@ -95,6 +95,6 @@ describe('SAMLProvider', function() {
         // Ths is naive but should be enough for now
         assert.notInclude(request, 'Signature', 'Request should not signed')
 
-        await validateSchema(await provider.protocolSchema!, request)
+        await validateSchema(provider.protocolSchema!, request)
     })
 })

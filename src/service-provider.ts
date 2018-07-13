@@ -62,7 +62,7 @@ export default class SAMLProvider {
     }
 
     public async buildLoginRequestRedirectURL(RelayState?: string) {
-        const request = await getLoginXML(await this.options.getUUID(), this.options)
+        const request = getLoginXML(await this.options.getUUID(), this.options)
 
         const SAMLRequest = toBase64(
             this.options.signLoginRequests ? signXML(request, this.options.sp.signature) : request

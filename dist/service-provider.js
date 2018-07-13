@@ -28,7 +28,7 @@ class SAMLProvider {
     }
     buildLoginRequestRedirectURL(RelayState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const request = yield getLoginXML(yield this.options.getUUID(), this.options);
+            const request = getLoginXML(yield this.options.getUUID(), this.options);
             const SAMLRequest = helpers_1.toBase64(this.options.signLoginRequests ? signature_1.signXML(request, this.options.sp.signature) : request);
             const params = RelayState
                 ? querystring.stringify({ SAMLRequest, RelayState })
