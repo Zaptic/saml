@@ -27,6 +27,7 @@ type SPOptions = {
 }
 
 export type Options = {
+    signLoginRequests?: boolean
     attributeMapping?: { [key: string]: XPath }
     strictTimeCheck?: boolean
     nameIdFormat?: string
@@ -49,6 +50,7 @@ export default class SAMLProvider {
             nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
             strictTimeCheck: false,
             attributeMapping: {},
+            signLoginRequests: true,
             ...options
         }
     }
@@ -62,7 +64,9 @@ export default class SAMLProvider {
     public async buildLoginRequestRedirectURL(RelayState?: string) {
         const request = await getLoginXML(await this.options.getUUID(), this.options)
 
-        const SAMLRequest = toBase64(signXML(request, this.options.sp.signature))
+        const SAMLRequest = toBase64(
+            this.options.signLoginRequests ? signXML(request, this.options.sp.signature) : request
+        )
 
         const params = RelayState
             ? querystring.stringify({ SAMLRequest, RelayState })

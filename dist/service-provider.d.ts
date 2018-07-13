@@ -20,6 +20,7 @@ declare type SPOptions = {
     }
 }
 export declare type Options = {
+    signLoginRequests?: boolean
     attributeMapping?: {
         [key: string]: XPath
     }

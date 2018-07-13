@@ -56,7 +56,7 @@ describe('SAMLProvider', function () {
             yield validateSchema(yield provider.metadataShema, metadata);
         });
     });
-    it('should generate a valid login request', function () {
+    it('should generate a valid signed login request', function () {
         return __awaiter(this, void 0, void 0, function* () {
             const provider = new service_provider_1.default(options);
             yield provider.init();
@@ -68,6 +68,25 @@ describe('SAMLProvider', function () {
             chai_1.assert.equal(RelayState, relayState, 'Relay states do not match');
             chai_1.assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute');
             const request = helpers_1.fromBase64(SAMLRequest);
+            // Ths is naive but should be enough for now
+            chai_1.assert.include(request, 'Signature', 'Request should be signed');
+            yield validateSchema(yield provider.protocolSchema, request);
+        });
+    });
+    it('should generate a valid non-signed login request', function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            const provider = new service_provider_1.default(Object.assign({}, options, { signLoginRequests: false }));
+            yield provider.init();
+            const relayState = 'someState';
+            const redirectURL = yield provider.buildLoginRequestRedirectURL(relayState);
+            const parts = redirectURL.split('?');
+            chai_1.assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options');
+            const { SAMLRequest, RelayState } = querystring.parse(parts[1]);
+            chai_1.assert.equal(RelayState, relayState, 'Relay states do not match');
+            chai_1.assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute');
+            const request = helpers_1.fromBase64(SAMLRequest);
+            // Ths is naive but should be enough for now
+            chai_1.assert.notInclude(request, 'Signature', 'Request should not signed');
             yield validateSchema(yield provider.protocolSchema, request);
         });
     });

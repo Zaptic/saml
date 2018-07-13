@@ -52,7 +52,7 @@ describe('SAMLProvider', function() {
         await validateSchema(await provider.metadataShema!, metadata)
     })
 
-    it('should generate a valid login request', async function() {
+    it('should generate a valid signed login request', async function() {
         const provider = new SAMLProvider(options)
         await provider.init()
 
@@ -68,6 +68,32 @@ describe('SAMLProvider', function() {
         assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
 
         const request = fromBase64(<string>SAMLRequest)
+
+        // Ths is naive but should be enough for now
+        assert.include(request, 'Signature', 'Request should be signed')
+
+        await validateSchema(await provider.protocolSchema!, request)
+    })
+
+    it('should generate a valid non-signed login request', async function() {
+        const provider = new SAMLProvider({ ...options, signLoginRequests: false })
+        await provider.init()
+
+        const relayState = 'someState'
+        const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
+        const parts = redirectURL.split('?')
+
+        assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options')
+
+        const { SAMLRequest, RelayState } = querystring.parse(parts[1])
+
+        assert.equal(RelayState, relayState, 'Relay states do not match')
+        assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
+
+        const request = fromBase64(<string>SAMLRequest)
+
+        // Ths is naive but should be enough for now
+        assert.notInclude(request, 'Signature', 'Request should not signed')
 
         await validateSchema(await provider.protocolSchema!, request)
     })

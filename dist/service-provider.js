@@ -17,7 +17,7 @@ class SAMLProvider {
     constructor(options) {
         this.protocolSchema = null;
         this.metadataShema = null;
-        this.options = Object.assign({ nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress', strictTimeCheck: false, attributeMapping: {} }, options);
+        this.options = Object.assign({ nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress', strictTimeCheck: false, attributeMapping: {}, signLoginRequests: true }, options);
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -29,7 +29,7 @@ class SAMLProvider {
     buildLoginRequestRedirectURL(RelayState) {
         return __awaiter(this, void 0, void 0, function* () {
             const request = yield getLoginXML(yield this.options.getUUID(), this.options);
-            const SAMLRequest = helpers_1.toBase64(signature_1.signXML(request, this.options.sp.signature));
+            const SAMLRequest = helpers_1.toBase64(this.options.signLoginRequests ? signature_1.signXML(request, this.options.sp.signature) : request);
             const params = RelayState
                 ? querystring.stringify({ SAMLRequest, RelayState })
                 : querystring.stringify({ SAMLRequest });
