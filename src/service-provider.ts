@@ -1,11 +1,12 @@
 import { checkSignature, signXML } from './signature'
-import { fromBase64, toX059, encodeRedirectParameters } from './helpers'
+import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
 import * as xml2js from 'xml2js'
 import { checkStatusCodes, checkTime } from './checks'
-import { loadXSD } from './xml'
+import { loadXSD } from './helpers/xml'
 import { AttributeStatement, SAMLResponse } from './saml-response'
 import * as url from 'url'
+import { toX059 } from './helpers/certificate'
 
 type IDPOptions = {
     id: string
@@ -72,7 +73,7 @@ export default class SAMLProvider {
 
     public async parseLoginResponse(query: { [key: string]: any }) {
         const relayState: string = query.ReplayState
-        const rawResponse: string = query.SAMLResponse && fromBase64(query.SAMLResponse)
+        const rawResponse: string = query.SAMLResponse && decodePostResponse(query.SAMLResponse)
 
         // Check that the response is not empty
         if (!rawResponse) throw new Error('Empty SAMLResponse')

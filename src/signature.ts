@@ -1,6 +1,6 @@
 import { SignedXml } from 'xml-crypto'
 import { DOMParser } from 'xmldom'
-import { toPEM, toX059 } from './helpers'
+import { toPEM, toX059 } from './helpers/certificate'
 import * as xpath from 'xpath'
 
 const algorithmMapping = {
