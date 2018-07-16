@@ -3,7 +3,7 @@ import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding
 import * as xsd from 'libxml-xsd'
 import * as xml2js from 'xml2js'
 import { checkStatusCodes, checkTime } from './checks'
-import { loadXSD } from './helpers/xml'
+import { loadXSD, validateXML } from './helpers/xml'
 import { AttributeStatement, SAMLResponse } from './saml-response'
 import * as url from 'url'
 import { toX059 } from './helpers/certificate'
@@ -79,15 +79,8 @@ export default class SAMLProvider {
         if (!rawResponse) throw new Error('Empty SAMLResponse')
 
         // Check that the xml is valid
-        await new Promise((resolve, reject) => {
-            if (this.protocolSchema === null) throw new Error('Call init() first')
-
-            this.protocolSchema.validate(rawResponse, (technicalErrors, validationErrors) => {
-                if (technicalErrors) return reject(`Technical errors: ${technicalErrors}`)
-                if (validationErrors) return reject(`Validation errors: ${validationErrors}`)
-                resolve()
-            })
-        })
+        if (this.protocolSchema === null) throw new Error('Call init() first')
+        validateXML(rawResponse, this.protocolSchema)
 
         // Check the signature - this should throw if there is an error
         checkSignature(rawResponse, this.options.idp.signature)
