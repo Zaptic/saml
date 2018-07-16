@@ -1,6 +1,5 @@
 import { checkSignature, signXML } from './signature'
-import { toBase64, fromBase64, normalizeCertificate } from './helpers'
-import * as querystring from 'querystring'
+import { fromBase64, normalizeCertificate, encodeRedirectParameters } from './helpers'
 import * as xsd from 'libxml-xsd'
 import { checkStatusCode, checkTime } from './checks'
 import { XPath, extractFields, getAttribute, getText, loadXSD } from './xml'
@@ -61,18 +60,11 @@ export default class SAMLProvider {
         return this
     }
 
-    public async buildLoginRequestRedirectURL(RelayState?: string) {
+    public async buildLoginRequestRedirectURL(relayState?: string) {
         const request = getLoginXML(await this.options.getUUID(), this.options)
+        const xml = this.options.signLoginRequests ? signXML(request, this.options.sp.signature) : request
 
-        const SAMLRequest = toBase64(
-            this.options.signLoginRequests ? signXML(request, this.options.sp.signature) : request
-        )
-
-        const params = RelayState
-            ? querystring.stringify({ SAMLRequest, RelayState })
-            : querystring.stringify({ SAMLRequest })
-
-        return this.options.idp.loginUrl + '?' + params
+        return this.options.idp.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
     }
 
     public async parseLoginResponse(query: { [key: string]: any }) {
@@ -188,4 +180,6 @@ const getLoginXML = (id: string, options: Options) =>
             xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
             xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
         <saml:Issuer>${options.sp.id}</saml:Issuer>
-    </samlp:AuthnRequest>`.replace(/>\n */g, '>') // Remove formatting to make sure it does not the redirect request
+    </samlp:AuthnRequest>`
+        .replace(/>\n */g, '>')
+        .replace(/\n\s*/g, ' ') // Remove formatting to make sure it does not the redirect request
