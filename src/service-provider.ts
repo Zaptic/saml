@@ -6,7 +6,8 @@ import { checkStatusCodes, checkTime } from './checks'
 import { loadXSD, validateXML } from './helpers/xml'
 import { AttributeStatement, SAMLResponse } from './saml-response'
 import * as url from 'url'
-import { toX059 } from './helpers/certificate'
+import getMetadataXML from './templates/metadata'
+import getLoginXML from './templates/loginRequest'
 
 type IDPOptions = {
     id: string
@@ -156,59 +157,3 @@ export default class SAMLProvider {
         return parsedResponse
     }
 }
-
-const getMetadataXML = (options: SPOptions, nameIdFormat: string) =>
-    `<EntityDescriptor
-        xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-        entityID="${options.id}">
-
-        <SPSSODescriptor
-            AuthnRequestsSigned="true"
-            WantAssertionsSigned="true"
-            protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-
-            <KeyDescriptor use="signing">
-                <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
-                    <X509Data>
-                        <X509Certificate>${toX059(options.signature.certificate)}</X509Certificate>
-                    </X509Data>
-                </KeyInfo>
-            </KeyDescriptor>
-
-            <KeyDescriptor use="encryption">
-                <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
-                    <X509Data>
-                        <X509Certificate>${toX059(options.signature.certificate)}</X509Certificate>
-                    </X509Data>
-                </KeyInfo>
-
-            </KeyDescriptor>
-
-            <SingleLogoutService
-                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-                Location="${options.singleLogoutUrl}"/>
-
-            <NameIDFormat>${nameIdFormat}</NameIDFormat>
-
-            <AssertionConsumerService
-                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                Location="${options.assertionUrl}"
-                index="1"/>
-
-        </SPSSODescriptor>
-    </EntityDescriptor>`
-
-const getLoginXML = (id: string, options: Options) =>
-    `<samlp:AuthnRequest
-            AssertionConsumerServiceURL="${options.sp.assertionUrl}"
-            Destination="${options.idp.loginUrl}"
-            ID="${'_' + id}"
-            IssueInstant="${new Date().toISOString()}"
-            ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-            Version="2.0"
-            xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-            xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
-        <saml:Issuer>${options.sp.id}</saml:Issuer>
-    </samlp:AuthnRequest>`
-        .replace(/>\n */g, '>')
-        .replace(/\n\s*/g, ' ') // Remove formatting to make sure it does not the redirect request
