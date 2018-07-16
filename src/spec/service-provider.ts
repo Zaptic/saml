@@ -3,8 +3,8 @@ import * as path from 'path'
 import { assert } from 'chai'
 import SAMLProvider from '../service-provider'
 import * as querystring from 'querystring'
-import { fromBase64 } from '../helpers'
 import * as xsd from 'libxml-xsd'
+import * as zlib from 'zlib'
 
 const testCert = fs.readFileSync(path.resolve('./src/spec/resources/cert.pem'), 'utf8')
 const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8')
@@ -67,7 +67,7 @@ describe('SAMLProvider', function() {
         assert.equal(RelayState, relayState, 'Relay states do not match')
         assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
 
-        const request = fromBase64(<string>SAMLRequest)
+        const request = zlib.inflateRawSync(new Buffer(<string>SAMLRequest, 'base64')).toString('utf8')
 
         // Ths is naive but should be enough for now
         assert.include(request, 'Signature', 'Request should be signed')
@@ -90,7 +90,7 @@ describe('SAMLProvider', function() {
         assert.equal(RelayState, relayState, 'Relay states do not match')
         assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
 
-        const request = fromBase64(<string>SAMLRequest)
+        const request = zlib.inflateRawSync(new Buffer(<string>SAMLRequest, 'base64')).toString('utf8')
 
         // Ths is naive but should be enough for now
         assert.notInclude(request, 'Signature', 'Request should not signed')
