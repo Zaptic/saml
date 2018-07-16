@@ -31,6 +31,7 @@ type SPOptions = {
 export type Options = {
     signLoginRequests?: boolean
     strictTimeCheck?: boolean
+    attributeMapping?: { [attribute: string]: string }
     nameIdFormat?: string
     getUUID: () => string | Promise<string>
     idp: IDPOptions
@@ -43,6 +44,7 @@ export default class SAMLProvider {
     private readonly options: Options & {
         nameIdFormat: string
         strictTimeCheck: boolean
+        attributeMapping: { [attribute: string]: string }
     }
 
     constructor(options: Options) {
@@ -50,6 +52,7 @@ export default class SAMLProvider {
             nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
             strictTimeCheck: false,
             signLoginRequests: true,
+            attributeMapping: {},
             ...options
         }
     }
@@ -146,7 +149,9 @@ export default class SAMLProvider {
                 audience: assertion.Conditions[0].AudienceRestriction[0].Audience[0],
                 attributes: assertion.AttributeStatement[0].Attribute.reduce(
                     (accum: { [key: string]: string }, attribute: AttributeStatement['Attribute']) => {
-                        accum[attribute.$.Name] = attribute.AttributeValue[0]
+                        const mappedName = this.options.attributeMapping[attribute.$.Name]
+                        if (mappedName) accum[mappedName] = attribute.AttributeValue[0]
+                        else accum[attribute.$.Name] = attribute.AttributeValue[0]
                         return accum
                     },
                     {}
