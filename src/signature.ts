@@ -67,7 +67,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
             const givenCertificate = xpath.select(".//*[local-name(.)='X509Certificate']", signature)[0].firstChild.data
             const normalizedCertificate = normalizeCertificate(givenCertificate)
 
-            if (allowedCertificates.includes(normalizedCertificate)) throw new Error('Certificate is not allowed')
+            if (!allowedCertificates.includes(normalizedCertificate)) throw new Error('Certificate is not allowed')
 
             crypto.keyInfoProvider = new KeyInformationProvider(normalizedCertificate)
         }
