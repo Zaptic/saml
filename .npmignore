@@ -3,3 +3,8 @@
 
 # Source files
 src/*
+
+# Dev configuration files
+tsconfig.json
+tslint.json
+prettier.config.js
