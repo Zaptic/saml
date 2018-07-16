@@ -69,16 +69,16 @@ export default class SAMLProvider {
 
     public async parseLoginResponse(query: { [key: string]: any }) {
         const relayState: string = query.ReplayState
-        const response: string = query.SAMLResponse && fromBase64(query.SAMLResponse)
+        const rawResponse: string = query.SAMLResponse && fromBase64(query.SAMLResponse)
 
         // Check that the response is not empty
-        if (!response) throw new Error('Empty SAMLResponse')
+        if (!rawResponse) throw new Error('Empty SAMLResponse')
 
         // Check that the xml is valid
         await new Promise((resolve, reject) => {
             if (this.protocolSchema === null) throw new Error('Call init() first')
 
-            this.protocolSchema.validate(response, (technicalErrors, validationErrors) => {
+            this.protocolSchema.validate(rawResponse, (technicalErrors, validationErrors) => {
                 if (technicalErrors) return reject(`Technical errors: ${technicalErrors}`)
                 if (validationErrors) return reject(`Validation errors: ${validationErrors}`)
                 resolve()
@@ -86,15 +86,15 @@ export default class SAMLProvider {
         })
 
         // Check the signature - this should throw if there is an error
-        checkSignature(response, this.options.idp.signature)
+        checkSignature(rawResponse, this.options.idp.signature)
 
-        const parsedResponse = await this.extract(response)
+        const response = await this.extract(rawResponse)
 
         // Check status codes
-        if (!checkStatusCodes(parsedResponse.statusCodes)) throw new Error('Invalid status code')
+        if (!checkStatusCodes(response.statusCodes)) throw new Error('Invalid status code')
 
         // Check the issuer
-        if (parsedResponse.issuer !== this.options.idp.id) throw new Error('Unknown issuer')
+        if (response.issuer !== this.options.idp.id) throw new Error('Unknown issuer')
 
         // Prefix the sp id with spn: if it's not a url - this is what microsoft seems to do so let's duplicate for now
         // If this leads to issues then we can make the prefix a parameter
@@ -102,7 +102,7 @@ export default class SAMLProvider {
             ? this.options.sp.id
             : 'spn:' + this.options.sp.id
 
-        parsedResponse.assertions.forEach(assertion => {
+        response.assertions.forEach(assertion => {
             // Check the audience
             if (assertion.audience !== expectedAudience) throw new Error('Unexpected audience')
 
@@ -112,7 +112,7 @@ export default class SAMLProvider {
             if (!checkTime(beforeDate, afterDate, this.options.strictTimeCheck)) throw new Error('Assertion expired')
         })
 
-        return { assertions: parsedResponse, relayState }
+        return { response, relayState }
     }
 
     public getMetadata() {
