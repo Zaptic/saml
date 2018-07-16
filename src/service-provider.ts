@@ -4,7 +4,7 @@ import * as xsd from 'libxml-xsd'
 import { loadXSD, validateXML } from './helpers/xml'
 import { checkResponse, extract } from './login-response'
 import getMetadataXML from './templates/metadata'
-import getLoginXML from './templates/loginRequest'
+import getLoginXML from './templates/login-request'
 
 type IDPOptions = {
     id: string
