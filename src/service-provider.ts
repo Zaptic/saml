@@ -1,8 +1,11 @@
 import { checkSignature, signXML } from './signature'
 import { fromBase64, toX059, encodeRedirectParameters } from './helpers'
 import * as xsd from 'libxml-xsd'
-import { checkStatusCode, checkTime } from './checks'
-import { XPath, extractFields, getAttribute, getText, loadXSD } from './xml'
+import * as xml2js from 'xml2js'
+import { checkStatusCodes, checkTime } from './checks'
+import { loadXSD } from './xml'
+import { AttributeStatement, SAMLResponse } from './saml-response'
+import * as url from 'url'
 
 type IDPOptions = {
     id: string
@@ -27,7 +30,6 @@ type SPOptions = {
 
 export type Options = {
     signLoginRequests?: boolean
-    attributeMapping?: { [key: string]: XPath }
     strictTimeCheck?: boolean
     nameIdFormat?: string
     getUUID: () => string | Promise<string>
@@ -41,14 +43,12 @@ export default class SAMLProvider {
     private readonly options: Options & {
         nameIdFormat: string
         strictTimeCheck: boolean
-        attributeMapping: { [key: string]: XPath }
     }
 
     constructor(options: Options) {
         this.options = {
             nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
             strictTimeCheck: false,
-            attributeMapping: {},
             signLoginRequests: true,
             ...options
         }
@@ -88,43 +88,73 @@ export default class SAMLProvider {
         // Check the signature - this should throw if there is an error
         checkSignature(response, this.options.idp.signature)
 
-        const assertion = this.extract(response)
+        const parsedResponse = await this.extract(response)
 
-        // Check status code
-        if (!checkStatusCode(assertion.statusCode)) throw new Error('Invalid status code')
-
-        // Check the audience
-        if (assertion.id !== this.options.sp.id) throw new Error('Unexpected audience')
+        // Check status codes
+        if (!checkStatusCodes(parsedResponse.statusCodes)) throw new Error('Invalid status code')
 
         // Check the issuer
-        if (assertion.id !== this.options.idp.id) throw new Error('Unknown issuer')
+        if (parsedResponse.issuer !== this.options.idp.id) throw new Error('Unknown issuer')
 
-        // Check the time - dates are ISO according to spec
-        const beforeDate = new Date(assertion.notBefore)
-        const afterDate = new Date(assertion.notOnOrAfter)
-        if (!checkTime(beforeDate, afterDate, this.options.strictTimeCheck)) throw new Error('Assertion expired')
+        // Prefix the sp id with spn: if it's not a url - this is what microsoft seems to do so let's duplicate for now
+        // If this leads to issues then we can make the prefix a parameter
+        const expectedAudience = url.parse(this.options.sp.id).hostname
+            ? this.options.sp.id
+            : 'spn:' + this.options.sp.id
 
-        return { assertion, relayState }
+        parsedResponse.assertions.forEach(assertion => {
+            // Check the audience
+            if (assertion.audience !== expectedAudience) throw new Error('Unexpected audience')
+
+            // Check the time - dates are ISO according to spec
+            const beforeDate = new Date(assertion.notBefore)
+            const afterDate = new Date(assertion.notOnOrAfter)
+            if (!checkTime(beforeDate, afterDate, this.options.strictTimeCheck)) throw new Error('Assertion expired')
+        })
+
+        return { assertions: parsedResponse, relayState }
     }
 
     public getMetadata() {
         return getMetadataXML(this.options.sp, this.options.nameIdFormat)
     }
 
-    private extract(response: string) {
-        const mapping = {
-            notBefore: getAttribute('Conditions', 'NotBefore'),
-            notOnOrAfter: getAttribute('Conditions', 'NotOnOrAfter'),
-            inResponseTo: getAttribute('Response', 'InResponseTo'),
-            sessionIndex: getAttribute('AuthnStatement', 'SessionIndex'),
-            issuer: getText('Issuer'),
-            audience: getText('Audience'),
-            nameId: getText('NameID'),
-            statusCode: getAttribute('StatusCode', 'Value'),
-            ...this.options.attributeMapping
+    private async extract(response: string) {
+        const jsonResponse = await new Promise<SAMLResponse>((resolve, reject) => {
+            const options = {
+                tagNameProcessors: [xml2js.processors.stripPrefix],
+                attrNameProcessors: [xml2js.processors.stripPrefix],
+                explicitRoot: false
+            }
+
+            xml2js.parseString(response, options, (error, result) => {
+                if (error) return reject(error)
+                resolve(result)
+            })
+        })
+
+        const parsedResponse = {
+            id: jsonResponse.$.ID,
+            inResponseTo: jsonResponse.$.InResponseTo,
+            issuer: jsonResponse.Issuer[0]._,
+            statusCodes: jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value),
+            assertions: jsonResponse.Assertion.map((assertion: any) => ({
+                issuer: assertion.Issuer[0],
+                sessionIndex: assertion.AuthnStatement[0].$.SessionIndex,
+                notBefore: assertion.Conditions[0].$.NotBefore,
+                notOnOrAfter: assertion.Conditions[0].$.NotOnOrAfter,
+                audience: assertion.Conditions[0].AudienceRestriction[0].Audience[0],
+                attributes: assertion.AttributeStatement[0].Attribute.reduce(
+                    (accum: { [key: string]: string }, attribute: AttributeStatement['Attribute']) => {
+                        accum[attribute.$.Name] = attribute.AttributeValue[0]
+                        return accum
+                    },
+                    {}
+                )
+            }))
         }
 
-        return extractFields(response, mapping)
+        return parsedResponse
     }
 }
 

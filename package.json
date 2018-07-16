@@ -26,6 +26,7 @@
         "@types/chai": "^4.1.4",
         "@types/mocha": "^5.2.4",
         "@types/node": "^10.5.2",
+        "@types/xml2js": "^0.4.3",
         "@types/xmldom": "^0.1.29",
         "chai": "^4.1.2",
         "mocha": "^5.2.0",
@@ -37,6 +38,7 @@
     "dependencies": {
         "libxml-xsd": "^0.5.2",
         "xml-crypto": "^0.10.1",
+        "xml2js": "^0.4.19",
         "xmldom": "^0.1.27",
         "xpath": "^0.0.27"
     }

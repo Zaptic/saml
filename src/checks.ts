@@ -9,13 +9,13 @@ export function checkTime(notBefore?: Date, notOnOrAfter?: Date, strict = false)
     )
 }
 
-export function checkStatusCode(status: string) {
-    const permissibleStatus = [
+export function checkStatusCodes(statuses: string[]) {
+    const permissibleStatuses = [
         'urn:oasis:names:tc:SAML:2.0:status:Success',
         'urn:oasis:names:tc:SAML:2.0:status:Requester',
         'urn:oasis:names:tc:SAML:2.0:status:Responder',
         'urn:oasis:names:tc:SAML:2.0:status:VersionMismatch'
     ]
 
-    return permissibleStatus.includes(status)
+    return statuses.every(status => permissibleStatuses.includes(status))
 }
