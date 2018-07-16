@@ -1,5 +1,5 @@
 import { checkSignature, signXML } from './signature'
-import { fromBase64, normalizeCertificate, encodeRedirectParameters } from './helpers'
+import { fromBase64, toX059, encodeRedirectParameters } from './helpers'
 import * as xsd from 'libxml-xsd'
 import { checkStatusCode, checkTime } from './checks'
 import { XPath, extractFields, getAttribute, getText, loadXSD } from './xml'
@@ -141,7 +141,7 @@ const getMetadataXML = (options: SPOptions, nameIdFormat: string) =>
             <KeyDescriptor use="signing">
                 <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
                     <X509Data>
-                        <X509Certificate>${normalizeCertificate(options.signature.certificate)}</X509Certificate>
+                        <X509Certificate>${toX059(options.signature.certificate)}</X509Certificate>
                     </X509Data>
                 </KeyInfo>
             </KeyDescriptor>
@@ -149,7 +149,7 @@ const getMetadataXML = (options: SPOptions, nameIdFormat: string) =>
             <KeyDescriptor use="encryption">
                 <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
                     <X509Data>
-                        <X509Certificate>${normalizeCertificate(options.signature.certificate)}</X509Certificate>
+                        <X509Certificate>${toX059(options.signature.certificate)}</X509Certificate>
                     </X509Data>
                 </KeyInfo>
 

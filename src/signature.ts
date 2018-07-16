@@ -1,6 +1,6 @@
 import { SignedXml } from 'xml-crypto'
 import { DOMParser } from 'xmldom'
-import { normalizeCertificate } from './helpers'
+import { toPEM, toX059 } from './helpers'
 import * as xpath from 'xpath'
 
 const algorithmMapping = {
@@ -65,7 +65,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
         if (certificate) crypto.keyInfoProvider = new KeyInformationProvider(certificate)
         else {
             const givenCertificate = xpath.select(".//*[local-name(.)='X509Certificate']", signature)[0].firstChild.data
-            const normalizedCertificate = normalizeCertificate(givenCertificate)
+            const normalizedCertificate = toX059(givenCertificate)
 
             if (!allowedCertificates.includes(normalizedCertificate)) throw new Error('Certificate is not allowed')
 
@@ -84,11 +84,11 @@ class KeyInformationProvider {
     constructor(private certificate: string) {}
 
     public getKeyInfo() {
-        const normalizedCert = normalizeCertificate(this.certificate)
+        const normalizedCert = toX059(this.certificate)
         return `<ds:X509Data><ds:X509Certificate>${normalizedCert}</ds:X509Certificate></ds:X509Data>`
     }
 
     public getKey() {
-        return this.certificate
+        return toPEM(this.certificate)
     }
 }
