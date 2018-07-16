@@ -1,11 +1,8 @@
 import { checkSignature, signXML } from './signature'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
-import * as xml2js from 'xml2js'
-import { checkStatusCodes, checkTime } from './checks'
 import { loadXSD, validateXML } from './helpers/xml'
-import { AttributeStatement, SAMLResponse } from './saml-response'
-import * as url from 'url'
+import { checkResponse, extract } from './login-response'
 import getMetadataXML from './templates/metadata'
 import getLoginXML from './templates/loginRequest'
 
@@ -73,6 +70,8 @@ export default class SAMLProvider {
     }
 
     public async parseLoginResponse(query: { [key: string]: any }) {
+        if (this.protocolSchema === null) throw new Error('Call init() first')
+
         const relayState: string = query.ReplayState
         const rawResponse: string = query.SAMLResponse && decodePostResponse(query.SAMLResponse)
 
@@ -80,34 +79,17 @@ export default class SAMLProvider {
         if (!rawResponse) throw new Error('Empty SAMLResponse')
 
         // Check that the xml is valid
-        if (this.protocolSchema === null) throw new Error('Call init() first')
-        validateXML(rawResponse, this.protocolSchema)
+        await validateXML(rawResponse, this.protocolSchema)
 
         // Check the signature - this should throw if there is an error
         checkSignature(rawResponse, this.options.idp.signature)
 
-        const response = await this.extract(rawResponse)
+        const response = await extract(rawResponse, this.options.attributeMapping)
 
-        // Check status codes
-        if (!checkStatusCodes(response.statusCodes)) throw new Error('Invalid status code')
-
-        // Check the issuer
-        if (response.issuer !== this.options.idp.id) throw new Error('Unknown issuer')
-
-        // Prefix the sp id with spn: if it's not a url - this is what microsoft seems to do so let's duplicate for now
-        // If this leads to issues then we can make the prefix a parameter
-        const expectedAudience = url.parse(this.options.sp.id).hostname
-            ? this.options.sp.id
-            : 'spn:' + this.options.sp.id
-
-        response.assertions.forEach(assertion => {
-            // Check the audience
-            if (assertion.audience !== expectedAudience) throw new Error('Unexpected audience')
-
-            // Check the time - dates are ISO according to spec
-            const beforeDate = new Date(assertion.notBefore)
-            const afterDate = new Date(assertion.notOnOrAfter)
-            if (!checkTime(beforeDate, afterDate, this.options.strictTimeCheck)) throw new Error('Assertion expired')
+        checkResponse(response, {
+            issuer: this.options.idp.id,
+            audience: this.options.sp.id,
+            strictTimeCheck: this.options.strictTimeCheck
         })
 
         return { response, relayState }
@@ -115,45 +97,5 @@ export default class SAMLProvider {
 
     public getMetadata() {
         return getMetadataXML(this.options.sp, this.options.nameIdFormat)
-    }
-
-    private async extract(response: string) {
-        const jsonResponse = await new Promise<SAMLResponse>((resolve, reject) => {
-            const options = {
-                tagNameProcessors: [xml2js.processors.stripPrefix],
-                attrNameProcessors: [xml2js.processors.stripPrefix],
-                explicitRoot: false
-            }
-
-            xml2js.parseString(response, options, (error, result) => {
-                if (error) return reject(error)
-                resolve(result)
-            })
-        })
-
-        const parsedResponse = {
-            id: jsonResponse.$.ID,
-            inResponseTo: jsonResponse.$.InResponseTo,
-            issuer: jsonResponse.Issuer[0]._,
-            statusCodes: jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value),
-            assertions: jsonResponse.Assertion.map((assertion: any) => ({
-                issuer: assertion.Issuer[0],
-                sessionIndex: assertion.AuthnStatement[0].$.SessionIndex,
-                notBefore: assertion.Conditions[0].$.NotBefore,
-                notOnOrAfter: assertion.Conditions[0].$.NotOnOrAfter,
-                audience: assertion.Conditions[0].AudienceRestriction[0].Audience[0],
-                attributes: assertion.AttributeStatement[0].Attribute.reduce(
-                    (accum: { [key: string]: string }, attribute: AttributeStatement['Attribute']) => {
-                        const mappedName = this.options.attributeMapping[attribute.$.Name]
-                        if (mappedName) accum[mappedName] = attribute.AttributeValue[0]
-                        else accum[attribute.$.Name] = attribute.AttributeValue[0]
-                        return accum
-                    },
-                    {}
-                )
-            }))
-        }
-
-        return parsedResponse
     }
 }
