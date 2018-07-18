@@ -1,5 +1,6 @@
 import * as path from 'path'
 import * as xsd from 'libxml-xsd'
+import * as xml2js from 'xml2js'
 
 type Validator = { validate: xsd.ValidateFunction }
 
@@ -23,6 +24,21 @@ export function validateXML(xml: string, validator: Validator) {
             if (technicalErrors) return reject(`Technical errors: ${technicalErrors}`)
             if (validationErrors) return reject(`Validation errors: ${validationErrors}`)
             resolve()
+        })
+    })
+}
+
+export function parseXML<T>(xml: string) {
+    return new Promise<T>((resolve, reject) => {
+        const options = {
+            tagNameProcessors: [xml2js.processors.stripPrefix],
+            attrNameProcessors: [xml2js.processors.stripPrefix],
+            explicitRoot: false
+        }
+
+        xml2js.parseString(xml, options, (error, result) => {
+            if (error) return reject(error)
+            resolve(result)
         })
     })
 }

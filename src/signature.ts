@@ -41,13 +41,12 @@ export function signXML(
 }
 
 export type CheckSignatureOptions = {
-    certificate: string
     algorithm: 'sha256' | 'sha512'
     allowedCertificates: string[]
 }
 
 export function checkSignature(xmlToCheck: string, options: CheckSignatureOptions) {
-    const { certificate, algorithm, allowedCertificates } = options
+    const { algorithm, allowedCertificates } = options
 
     const document = new DOMParser().parseFromString(xmlToCheck)
     const signatures = xpath.select("//*[local-name(.)='Signature']", document)
@@ -62,15 +61,12 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
     signatures.forEach(signature => {
         crypto.signatureAlgorithm = algorithmMapping[algorithm]
 
-        if (certificate) crypto.keyInfoProvider = new KeyInformationProvider(certificate)
-        else {
-            const givenCertificate = xpath.select(".//*[local-name(.)='X509Certificate']", signature)[0].firstChild.data
-            const normalizedCertificate = toX059(givenCertificate)
+        const givenCertificate = xpath.select(".//*[local-name(.)='X509Certificate']", signature)[0].firstChild.data
+        const normalizedCertificate = toX059(givenCertificate)
 
-            if (!allowedCertificates.includes(normalizedCertificate)) throw new Error('Certificate is not allowed')
+        if (!allowedCertificates.includes(normalizedCertificate)) throw new Error('Certificate is not allowed')
 
-            crypto.keyInfoProvider = new KeyInformationProvider(normalizedCertificate)
-        }
+        crypto.keyInfoProvider = new KeyInformationProvider(normalizedCertificate)
 
         crypto.loadSignature(signature)
         if (!crypto.checkSignature(xmlToCheck)) throw new Error('One of the provided signatures is not valid')

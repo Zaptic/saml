@@ -34,17 +34,15 @@ describe('SAMLProvider', function() {
     }
 
     it('should generate valid metadata', async function() {
-        const provider = new SAMLProvider(options)
-        await provider.init()
+        const provider = await SAMLProvider.create(options)
 
         const metadata = provider.getMetadata()
 
-        await validateXML(metadata, provider.metadataShema!)
+        await validateXML(metadata, provider.XSDs.metadata!)
     })
 
     it('should generate a valid signed login request', async function() {
-        const provider = new SAMLProvider(options)
-        await provider.init()
+        const provider = await SAMLProvider.create(options)
 
         const relayState = 'someState'
         const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
@@ -62,12 +60,11 @@ describe('SAMLProvider', function() {
         // Ths is naive but should be enough for now
         assert.include(request, 'Signature', 'Request should be signed')
 
-        await validateXML(request, provider.protocolSchema!)
+        await validateXML(request, provider.XSDs.protocol!)
     })
 
     it('should generate a valid non-signed login request', async function() {
-        const provider = new SAMLProvider({ ...options, signLoginRequests: false })
-        await provider.init()
+        const provider = await SAMLProvider.create({ ...options, preferences: { signLoginRequests: false } })
 
         const relayState = 'someState'
         const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
@@ -85,6 +82,6 @@ describe('SAMLProvider', function() {
         // Ths is naive but should be enough for now
         assert.notInclude(request, 'Signature', 'Request should not signed')
 
-        await validateXML(request, provider.protocolSchema!)
+        await validateXML(request, provider.XSDs.protocol!)
     })
 })
