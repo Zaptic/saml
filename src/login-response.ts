@@ -29,7 +29,8 @@ export namespace SAMLLoginResponse {
         Signature: Signature[]
         Subject: Subject[]
         Conditions: Conditions[]
-        AttributeStatement: { Attribute: Attribute }[]
+        AuthnStatement: { $: { SessionIndex: string } }[]
+        AttributeStatement: { Attribute: Attribute[] }[]
     }
 
     export type Attribute = {
@@ -75,9 +76,16 @@ type LoginResponse<T> = {
     }[]
 }
 
+type CheckOptions = {
+    issuer: string
+    audience: string
+    strictTimeCheck: boolean
+}
+
 export async function extract<T extends { [key: string]: string }>(
     response: string,
-    attributeMapping: T
+    attributeMapping: T,
+    options: CheckOptions
 ): Promise<LoginResponse<T>> {
     const jsonResponse = await parseXML<SAMLLoginResponse.Root>(response)
 
@@ -86,14 +94,14 @@ export async function extract<T extends { [key: string]: string }>(
         inResponseTo: jsonResponse.$.InResponseTo,
         issuer: jsonResponse.Issuer[0]._,
         statusCodes: jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value),
-        assertions: jsonResponse.Assertion.map((assertion: any) => ({
+        assertions: jsonResponse.Assertion.map(assertion => ({
             issuer: assertion.Issuer[0],
             sessionIndex: assertion.AuthnStatement[0].$.SessionIndex,
             notBefore: new Date(assertion.Conditions[0].$.NotBefore),
             notOnOrAfter: new Date(assertion.Conditions[0].$.NotOnOrAfter),
             audience: assertion.Conditions[0].AudienceRestriction[0].Audience[0],
             attributes: assertion.AttributeStatement[0].Attribute.reduce(
-                (accum: { [key: string]: string }, attribute: SAMLLoginResponse.Attribute) => {
+                (accum, attribute: SAMLLoginResponse.Attribute) => {
                     const mappedName = attributeMapping[attribute.$.Name]
 
                     if (mappedName) accum[mappedName] = attribute.AttributeValue[0]
@@ -101,32 +109,22 @@ export async function extract<T extends { [key: string]: string }>(
 
                     return accum
                 },
-                {}
+                <LoginResponse<T>['assertions'][0]['attributes']>{}
             )
         }))
     }
 
-    return parsedResponse
-}
-
-type CheckOptions = {
-    issuer: string
-    audience: string
-    strictTimeCheck: boolean
-}
-
-export function check<T>(response: LoginResponse<T>, options: CheckOptions) {
     // Check status codes
-    if (!checkStatusCodes(response.statusCodes)) throw new Error('Invalid status code')
+    if (!checkStatusCodes(parsedResponse.statusCodes)) throw new Error('Invalid status code')
 
     // Check the issuer
-    if (response.issuer !== options.issuer) throw new Error('Unknown issuer')
+    if (parsedResponse.issuer !== options.issuer) throw new Error('Unknown issuer')
 
     // Prefix the sp id with spn: if it's not a url - this is what microsoft seems to do so let's duplicate for now
     // If this leads to issues then we can make the prefix a parameter
     const expectedAudience = url.parse(options.audience).hostname ? options.audience : 'spn:' + options.audience
 
-    response.assertions.forEach(assertion => {
+    parsedResponse.assertions.forEach(assertion => {
         // Check the audience
         if (assertion.audience !== expectedAudience) throw new Error('Unexpected audience')
 
@@ -135,4 +133,6 @@ export function check<T>(response: LoginResponse<T>, options: CheckOptions) {
         const afterDate = assertion.notOnOrAfter
         if (!checkTime(beforeDate, afterDate, options.strictTimeCheck)) throw new Error('Assertion expired')
     })
+
+    return parsedResponse
 }

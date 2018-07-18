@@ -126,13 +126,13 @@ export default class SAMLProvider {
         // Check the signature - this should throw if there is an error
         checkSignature(rawResponse, this.identityProvider.signature)
 
-        const response = await LoginResponse.extract(rawResponse, this.preferences.attributeMapping)
-
-        LoginResponse.check(response, {
+        const checkOptions = {
             issuer: this.identityProvider.id,
             audience: this.serviceProvider.id,
             strictTimeCheck: this.preferences.strictTimeCheck
-        })
+        }
+
+        const response = await LoginResponse.extract(rawResponse, this.preferences.attributeMapping, checkOptions)
 
         return { response, relayState }
     }
