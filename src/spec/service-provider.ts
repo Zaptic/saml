@@ -39,7 +39,7 @@ describe('SAMLProvider', function() {
 
         const metadata = provider.getMetadata()
 
-        await validateXML(metadata, provider.metadataShema!)
+        await validateXML(metadata, provider.metadataSchema!)
     })
 
     it('should generate a valid signed login request', async function() {

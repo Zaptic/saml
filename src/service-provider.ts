@@ -39,7 +39,7 @@ export type Options = {
 
 export default class SAMLProvider {
     public protocolSchema: { validate: xsd.ValidateFunction } | null = null
-    public metadataShema: { validate: xsd.ValidateFunction } | null = null
+    public metadataSchema: { validate: xsd.ValidateFunction } | null = null
     private readonly options: Options & {
         nameIdFormat: string
         strictTimeCheck: boolean
@@ -58,7 +58,7 @@ export default class SAMLProvider {
 
     public async init() {
         this.protocolSchema = await loadXSD('saml-schema-protocol-2.0.xsd')
-        this.metadataShema = await loadXSD('saml-schema-metadata-2.0.xsd')
+        this.metadataSchema = await loadXSD('saml-schema-metadata-2.0.xsd')
         return this
     }
 
