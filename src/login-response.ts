@@ -115,7 +115,7 @@ type CheckOptions = {
     strictTimeCheck: boolean
 }
 
-export function checkResponse<T>(response: LoginResponse<T>, options: CheckOptions) {
+export function check<T>(response: LoginResponse<T>, options: CheckOptions) {
     // Check status codes
     if (!checkStatusCodes(response.statusCodes)) throw new Error('Invalid status code')
 

@@ -2,21 +2,21 @@ import { checkSignature, signXML } from './signature'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
 import { loadXSD, validateXML } from './helpers/xml'
-import { checkResponse, extract } from './login-response'
+import * as LoginResponse from './login-response'
+import * as Metadata from './metadata'
 import getMetadataXML from './templates/metadata'
 import getLoginXML from './templates/login-request'
 
-type IDPOptions = {
+export type IDPOptions = {
     id: string
     loginUrl: string
     signature: {
-        certificate: string
         algorithm: 'sha256' | 'sha512'
         allowedCertificates: string[]
     }
 }
 
-type SPOptions = {
+export type SPOptions = {
     id: string
     singleLogoutUrl: string
     assertionUrl: string
@@ -27,51 +27,93 @@ type SPOptions = {
     }
 }
 
-export type Options = {
-    signLoginRequests?: boolean
-    strictTimeCheck?: boolean
-    attributeMapping?: { [attribute: string]: string }
-    nameIdFormat?: string
+export type Preferences = {
+    signLoginRequests: boolean
+    strictTimeCheck: boolean
+    attributeMapping: { [attribute: string]: string }
+    nameIdFormat: string
+}
+
+export type OptionsWithoutMetadata = {
+    preferences?: Partial<Preferences>
     getUUID: () => string | Promise<string>
     idp: IDPOptions
     sp: SPOptions
 }
 
-export default class SAMLProvider {
-    public protocolSchema: { validate: xsd.ValidateFunction } | null = null
-    public metadataSchema: { validate: xsd.ValidateFunction } | null = null
-    private readonly options: Options & {
-        nameIdFormat: string
-        strictTimeCheck: boolean
-        attributeMapping: { [attribute: string]: string }
-    }
+export type OptionsWithMetadata = {
+    preferences?: Partial<Preferences>
+    getUUID: () => string | Promise<string>
+    idp: string
+    sp: SPOptions
+}
 
-    constructor(options: Options) {
-        this.options = {
+type SAMLProviderOptions = {
+    XSDs: {
+        protocol: { validate: xsd.ValidateFunction }
+        metadata: { validate: xsd.ValidateFunction }
+    }
+    preferences: Preferences
+    identityProvider: IDPOptions
+    serviceProvider: SPOptions
+    getUUID: () => string | Promise<string>
+}
+
+function hasMetadata(options: OptionsWithoutMetadata | OptionsWithMetadata): options is OptionsWithMetadata {
+    return typeof options.idp === 'string'
+}
+
+export default class SAMLProvider {
+    public static async create(options: OptionsWithoutMetadata | OptionsWithMetadata) {
+        const XSDs = {
+            protocol: await loadXSD('saml-schema-protocol-2.0.xsd'),
+            metadata: await loadXSD('saml-schema-metadata-2.0.xsd')
+        }
+
+        const preferences = {
+            // Defaults
             nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
             strictTimeCheck: false,
             signLoginRequests: true,
             attributeMapping: {},
-            ...options
+            // User
+            ...(options.preferences || {})
         }
+        const identityProvider = hasMetadata(options)
+            ? (await Metadata.extract(options.idp)).identityProvider
+            : options.idp
+        const serviceProvider = options.sp
+
+        return new SAMLProvider({ XSDs, preferences, identityProvider, serviceProvider, getUUID: options.getUUID })
     }
 
-    public async init() {
-        this.protocolSchema = await loadXSD('saml-schema-protocol-2.0.xsd')
-        this.metadataSchema = await loadXSD('saml-schema-metadata-2.0.xsd')
-        return this
+    public readonly XSDs: SAMLProviderOptions['XSDs']
+    public readonly preferences: SAMLProviderOptions['preferences']
+
+    private readonly identityProvider: SAMLProviderOptions['identityProvider']
+    private readonly serviceProvider: SAMLProviderOptions['serviceProvider']
+    private readonly getUUID: SAMLProviderOptions['getUUID']
+
+    private constructor(options: SAMLProviderOptions) {
+        this.XSDs = options.XSDs
+        this.preferences = options.preferences
+        this.identityProvider = options.identityProvider
+        this.serviceProvider = options.serviceProvider
+        this.getUUID = options.getUUID
     }
 
     public async buildLoginRequestRedirectURL(relayState?: string) {
-        const request = getLoginXML(await this.options.getUUID(), this.options)
-        const xml = this.options.signLoginRequests ? signXML(request, this.options.sp.signature) : request
+        const request = getLoginXML(await this.getUUID(), {
+            serviceProviderId: this.serviceProvider.id,
+            assertionUrl: this.serviceProvider.assertionUrl,
+            loginUrl: this.identityProvider.loginUrl
+        })
+        const xml = this.preferences.signLoginRequests ? signXML(request, this.serviceProvider.signature) : request
 
-        return this.options.idp.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
+        return this.identityProvider.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
     }
 
     public async parseLoginResponse(query: { [key: string]: any }) {
-        if (this.protocolSchema === null) throw new Error('Call init() first')
-
         const relayState: string = query.ReplayState
         const rawResponse: string = query.SAMLResponse && decodePostResponse(query.SAMLResponse)
 
@@ -79,23 +121,23 @@ export default class SAMLProvider {
         if (!rawResponse) throw new Error('Empty SAMLResponse')
 
         // Check that the xml is valid
-        await validateXML(rawResponse, this.protocolSchema)
+        await validateXML(rawResponse, this.XSDs.protocol)
 
         // Check the signature - this should throw if there is an error
-        checkSignature(rawResponse, this.options.idp.signature)
+        checkSignature(rawResponse, this.identityProvider.signature)
 
-        const response = await extract(rawResponse, this.options.attributeMapping)
+        const response = await LoginResponse.extract(rawResponse, this.preferences.attributeMapping)
 
-        checkResponse(response, {
-            issuer: this.options.idp.id,
-            audience: this.options.sp.id,
-            strictTimeCheck: this.options.strictTimeCheck
+        LoginResponse.check(response, {
+            issuer: this.identityProvider.id,
+            audience: this.serviceProvider.id,
+            strictTimeCheck: this.preferences.strictTimeCheck
         })
 
         return { response, relayState }
     }
 
     public getMetadata() {
-        return getMetadataXML(this.options.sp, this.options.nameIdFormat)
+        return getMetadataXML(this.serviceProvider, this.preferences.nameIdFormat)
     }
 }
