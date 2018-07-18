@@ -12,9 +12,11 @@ export type Signature = {
         }
     }[]
     SignatureValue: string[]
-    KeyInfo: {
-        X509Data: {
-            X509Certificate: string[]
-        }[]
+    KeyInfo: KeyInfo[]
+}
+
+export type KeyInfo = {
+    X509Data: {
+        X509Certificate: string[]
     }[]
 }
