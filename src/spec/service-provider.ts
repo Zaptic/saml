@@ -5,6 +5,7 @@ import SAMLProvider from '../service-provider'
 import * as querystring from 'querystring'
 import * as zlib from 'zlib'
 import { validateXML } from '../helpers/xml'
+import * as xsd from 'libxml-xsd'
 
 const testCert = fs.readFileSync(path.resolve('./src/spec/resources/cert.pem'), 'utf8')
 const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8')
@@ -33,6 +34,23 @@ describe('SAMLProvider', function() {
         getUUID: () => 'test-uuid'
     }
 
+    function checkRedirectURL(redirectURL: string, relayState: string, schema: { validate: xsd.ValidateFunction }) {
+        const parts = redirectURL.split('?')
+        assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options')
+
+        const { SAMLRequest, RelayState } = querystring.parse(parts[1])
+
+        assert.equal(RelayState, relayState, 'Relay states do not match')
+        assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
+
+        const request = zlib.inflateRawSync(new Buffer(<string>SAMLRequest, 'base64')).toString('utf8')
+
+        // Ths is naive but should be enough for now
+        assert.include(request, 'Signature', 'Request should be signed')
+
+        return validateXML(request, schema)
+    }
+
     it('should generate valid metadata', async function() {
         const provider = await SAMLProvider.create(options)
 
@@ -46,21 +64,17 @@ describe('SAMLProvider', function() {
 
         const relayState = 'someState'
         const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
-        const parts = redirectURL.split('?')
 
-        assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options')
+        await checkRedirectURL(redirectURL, relayState, provider.XSDs.protocol)
+    })
 
-        const { SAMLRequest, RelayState } = querystring.parse(parts[1])
+    it('should generate a valid signed login request with ForceAuthn set to true', async function() {
+        const provider = await SAMLProvider.create(options)
 
-        assert.equal(RelayState, relayState, 'Relay states do not match')
-        assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
+        const relayState = 'someState'
+        const redirectURL = await provider.buildLoginRequestRedirectURL(relayState, true)
 
-        const request = zlib.inflateRawSync(new Buffer(<string>SAMLRequest, 'base64')).toString('utf8')
-
-        // Ths is naive but should be enough for now
-        assert.include(request, 'Signature', 'Request should be signed')
-
-        await validateXML(request, provider.XSDs.protocol!)
+        await checkRedirectURL(redirectURL, relayState, provider.XSDs.protocol)
     })
 
     it('should generate a valid non-signed login request', async function() {
