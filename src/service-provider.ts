@@ -102,11 +102,12 @@ export default class SAMLProvider {
         this.getUUID = options.getUUID
     }
 
-    public async buildLoginRequestRedirectURL(relayState?: string) {
+    public async buildLoginRequestRedirectURL(relayState?: string, forceAuthentication = false) {
         const request = getLoginXML(await this.getUUID(), {
             serviceProviderId: this.serviceProvider.id,
             assertionUrl: this.serviceProvider.assertionUrl,
-            loginUrl: this.identityProvider.loginUrl
+            loginUrl: this.identityProvider.loginUrl,
+            forceAuthentication
         })
         const xml = this.preferences.signLoginRequests ? signXML(request, this.serviceProvider.signature) : request
 
