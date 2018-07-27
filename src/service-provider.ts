@@ -25,6 +25,12 @@ export type SPOptions = {
         key: string
         algorithm: 'sha256' | 'sha512'
     }
+    // Uses the same certificates as signature if not provided
+    encryption?: {
+        certificate: string
+        key: string
+        algorithm: 'sha256' | 'sha512'
+    }
 }
 
 export type Preferences = {
@@ -83,6 +89,9 @@ export default class SAMLProvider {
             ? (await Metadata.extract(options.idp)).identityProvider
             : options.idp
         const serviceProvider = options.sp
+
+        // Default the encryption certificates to the signatures one to reduce verbosity of the options
+        if (!serviceProvider.encryption) serviceProvider.encryption = serviceProvider.signature
 
         return new SAMLProvider({ XSDs, preferences, identityProvider, serviceProvider, getUUID: options.getUUID })
     }
