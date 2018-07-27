@@ -8,15 +8,15 @@ export type Signature = {
             $: { URI: string }
             Transforms: { Transform: { Transform: AlgorithmAttribute[] }[] }
             DigestMethod: AlgorithmAttribute[]
-            DigestValue: string[]
+            DigestValue: { _: string }[]
         }
     }[]
-    SignatureValue: string[]
+    SignatureValue: { _: string }[]
     KeyInfo: KeyInfo[]
 }
 
 export type KeyInfo = {
     X509Data: {
-        X509Certificate: string[]
+        X509Certificate: { _: string }[]
     }[]
 }

@@ -48,7 +48,7 @@ export async function extract(xml: string): Promise<Metadata> {
                 algorithm: <'sha256'>'sha256', // Default for now
                 allowedCertificates: idpDescriptor.KeyDescriptor.filter(
                     keyDescriptor => keyDescriptor.$.use === 'signing'
-                ).map(keyDescriptor => keyDescriptor.KeyInfo[0].X509Data[0].X509Certificate[0])
+                ).map(keyDescriptor => keyDescriptor.KeyInfo[0].X509Data[0].X509Certificate[0]._)
             },
 
             loginUrl: idpDescriptor.SingleSignOnService.filter(
