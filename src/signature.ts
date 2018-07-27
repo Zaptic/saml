@@ -2,6 +2,7 @@ import { SignedXml } from 'xml-crypto'
 import { DOMParser } from 'xmldom'
 import { toPEM, toX059 } from './helpers/certificate'
 import * as xpath from 'xpath'
+import * as xmlEncryption from 'xml-encryption'
 
 const algorithmMapping = {
     sha256: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
@@ -71,6 +72,16 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
         crypto.loadSignature(signature)
         if (!crypto.checkSignature(xmlToCheck)) throw new Error('One of the provided signatures is not valid')
     })
+}
+
+type DecryptionOptions = {
+    certificate: string
+    key: string
+}
+
+export function decrypt(xmlToDecrypt: string, options: DecryptionOptions) {
+    const document = new DOMParser().parseFromString(xmlToDecrypt)
+    const encryptedAssertion = xpath.select("//*[local-name(.)='EncryptedAssertion']", document)
 }
 
 // This is used by the xml-crypto library. Docs can be found here:
