@@ -1,4 +1,4 @@
-import { checkSignature, signXML } from './signature'
+import { checkSignature, signXML } from './crypto'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
 import { loadXSD, validateXML } from './helpers/xml'
