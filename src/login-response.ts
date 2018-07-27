@@ -25,7 +25,7 @@ export namespace SAMLLoginResponse {
             Version: string
             xmlns: string
         }
-        Issuer: string[]
+        Issuer: { _: string }[]
         Signature: Signature[]
         Subject: Subject[]
         Conditions: Conditions[]
@@ -35,7 +35,7 @@ export namespace SAMLLoginResponse {
 
     export type Attribute = {
         $: { Name: string }
-        AttributeValue: [string]
+        AttributeValue: [{ _: string }]
     }
 
     export type Conditions = {
@@ -43,7 +43,7 @@ export namespace SAMLLoginResponse {
             NotBefore: string
             NotOnOrAfter: string
         }
-        AudienceRestriction: { Audience: string[] }[]
+        AudienceRestriction: { Audience: { _: string }[] }[]
     }
 
     export type Subject = {
@@ -67,6 +67,7 @@ type LoginResponse<T> = {
     issuer: string
     statusCodes: string[]
     assertions: {
+        subject: string
         issuer: string
         sessionIndex: string
         notBefore: Date
@@ -95,22 +96,26 @@ export async function extract<T extends { [key: string]: string }>(
         issuer: jsonResponse.Issuer[0]._,
         statusCodes: jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value),
         assertions: jsonResponse.Assertion.map(assertion => ({
-            issuer: assertion.Issuer[0],
+            issuer: assertion.Issuer[0]._,
             sessionIndex: assertion.AuthnStatement[0].$.SessionIndex,
             notBefore: new Date(assertion.Conditions[0].$.NotBefore),
             notOnOrAfter: new Date(assertion.Conditions[0].$.NotOnOrAfter),
-            audience: assertion.Conditions[0].AudienceRestriction[0].Audience[0],
-            attributes: assertion.AttributeStatement[0].Attribute.reduce(
-                (accum, attribute: SAMLLoginResponse.Attribute) => {
-                    const mappedName = attributeMapping[attribute.$.Name]
+            audience: assertion.Conditions[0].AudienceRestriction[0].Audience[0]._,
+            subject: assertion.Subject[0].NameID[0]._,
+            attributes: !assertion.AttributeStatement
+                ? // Default to an empty object if there are no attributes
+                  <LoginResponse<T>['assertions'][0]['attributes']>{}
+                : assertion.AttributeStatement[0].Attribute.reduce(
+                      (accum, attribute: SAMLLoginResponse.Attribute) => {
+                          const mappedName = attributeMapping[attribute.$.Name]
 
-                    if (mappedName) accum[mappedName] = attribute.AttributeValue[0]
-                    else accum[attribute.$.Name] = attribute.AttributeValue[0]
+                          if (mappedName) accum[mappedName] = attribute.AttributeValue[0]._
+                          else accum[attribute.$.Name] = attribute.AttributeValue[0]._
 
-                    return accum
-                },
-                <LoginResponse<T>['assertions'][0]['attributes']>{}
-            )
+                          return accum
+                      },
+                      <LoginResponse<T>['assertions'][0]['attributes']>{}
+                  )
         }))
     }
 

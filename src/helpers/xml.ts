@@ -33,6 +33,8 @@ export function parseXML<T>(xml: string) {
         const options = {
             tagNameProcessors: [xml2js.processors.stripPrefix],
             attrNameProcessors: [xml2js.processors.stripPrefix],
+            explicitCharkey: true,
+            explicitArray: true,
             explicitRoot: false
         }
 
