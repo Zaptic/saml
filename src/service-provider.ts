@@ -1,4 +1,4 @@
-import { checkSignature, signXML } from './crypto'
+import { checkSignature, decrypt, signXML } from './crypto'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
 import { loadXSD, validateXML } from './helpers/xml'
@@ -27,9 +27,9 @@ export type SPOptions = {
     }
     // Uses the same certificates as signature if not provided
     encryption?: {
-        certificate: string
+        certificate: string // Unused for now
         key: string
-        algorithm: 'sha256' | 'sha512'
+        algorithm: 'sha256' | 'sha512' // Unused for now
     }
 }
 
@@ -133,8 +133,11 @@ export default class SAMLProvider {
         // Check that the xml is valid
         await validateXML(rawResponse, this.XSDs.protocol)
 
+        // Potentially decrypt the assertions
+        const decryptedResponse = await decrypt(rawResponse, this.serviceProvider.encryption!.key)
+
         // Check the signature - this should throw if there is an error
-        checkSignature(rawResponse, this.identityProvider.signature)
+        checkSignature(decryptedResponse, this.identityProvider.signature)
 
         const checkOptions = {
             issuer: this.identityProvider.id,
@@ -142,7 +145,7 @@ export default class SAMLProvider {
             strictTimeCheck: this.preferences.strictTimeCheck
         }
 
-        const response = await LoginResponse.extract(rawResponse, this.preferences.attributeMapping, checkOptions)
+        const response = await LoginResponse.extract(decryptedResponse, this.preferences.attributeMapping, checkOptions)
 
         return { response, relayState }
     }
