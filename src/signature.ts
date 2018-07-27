@@ -2,7 +2,7 @@ import { SignedXml } from 'xml-crypto'
 import { DOMParser } from 'xmldom'
 import { toPEM, toX059 } from './helpers/certificate'
 import * as xpath from 'xpath'
-import * as xmlEncryption from 'xml-encryption'
+import * as XmlEncryption from 'xml-encryption'
 
 const algorithmMapping = {
     sha256: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
@@ -52,6 +52,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
     const document = new DOMParser().parseFromString(xmlToCheck)
     const signatures = xpath.select("//*[local-name(.)='Signature']", document)
 
+    if (!Array.isArray(signatures)) throw new Error('Invalid Signature: xpath should return an array')
     if (signatures.length === 0) throw new Error('No signature')
 
     // TODO check how risky this is?
@@ -74,14 +75,32 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
     })
 }
 
-type DecryptionOptions = {
-    certificate: string
-    key: string
+export async function decrypt(xmlToDecrypt: string, key: string) {
+    const document = new DOMParser().parseFromString(xmlToDecrypt)
+    const encryptedAssertions = xpath.select("//*[local-name(.)='EncryptedAssertion']", document)
+
+    if (!Array.isArray(encryptedAssertions)) throw new Error('Invalid encryption: xpath should return an array')
+    if (encryptedAssertions.length === 0) throw new Error('No encrypted assertions found')
+
+    for (const encryptedAssertion of encryptedAssertions) {
+        const assertion = await decryptPromise(encryptedAssertion, key)
+
+        // Replace the encrypted node by the decrypted one
+        const assertionNode = new DOMParser().parseFromString(assertion)
+        document.replaceChild(assertionNode, encryptedAssertion)
+    }
+
+    return document.toString()
 }
 
-export function decrypt(xmlToDecrypt: string, options: DecryptionOptions) {
-    const document = new DOMParser().parseFromString(xmlToDecrypt)
-    const encryptedAssertion = xpath.select("//*[local-name(.)='EncryptedAssertion']", document)
+function decryptPromise(encryptedAssertion: string, key: string) {
+    return new Promise<string>((resolve, reject) => {
+        XmlEncryption.decrypt(encryptedAssertion, { key }, (error, assertion) => {
+            if (error) return reject(error)
+            if (!assertion) return reject(new Error('Decrypted assertion is empty'))
+            resolve(assertion)
+        })
+    })
 }
 
 // This is used by the xml-crypto library. Docs can be found here:
