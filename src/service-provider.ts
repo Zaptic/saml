@@ -38,6 +38,7 @@ export type Preferences = {
     strictTimeCheck: boolean
     attributeMapping: { [attribute: string]: string }
     nameIdFormat: string
+    addNameIdPolicy: boolean
 }
 
 export type OptionsWithoutMetadata = {
@@ -82,6 +83,7 @@ export default class SAMLProvider {
             strictTimeCheck: false,
             signLoginRequests: true,
             attributeMapping: {},
+            addNameIdPolicy: false,
             // User
             ...(options.preferences || {})
         }
@@ -116,7 +118,8 @@ export default class SAMLProvider {
             serviceProviderId: this.serviceProvider.id,
             assertionUrl: this.serviceProvider.assertionUrl,
             loginUrl: this.identityProvider.loginUrl,
-            forceAuthentication
+            forceAuthentication,
+            addNameIdPolicy: this.preferences.addNameIdPolicy
         })
         const xml = this.preferences.signLoginRequests ? signXML(request, this.serviceProvider.signature) : request
 

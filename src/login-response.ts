@@ -90,11 +90,16 @@ export async function extract<T extends { [key: string]: string }>(
 ): Promise<LoginResponse<T>> {
     const jsonResponse = await parseXML<SAMLLoginResponse.Root>(response)
 
+    const statusCodes = jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value)
+
+    // Check status codes
+    if (!checkStatusCodes(statusCodes)) throw new Error('Invalid status code')
+
     const parsedResponse = {
         id: jsonResponse.$.ID,
         inResponseTo: jsonResponse.$.InResponseTo,
         issuer: jsonResponse.Issuer[0]._,
-        statusCodes: jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value),
+        statusCodes,
         assertions: jsonResponse.Assertion.map(assertion => ({
             issuer: assertion.Issuer[0]._,
             sessionIndex: assertion.AuthnStatement[0].$.SessionIndex,
@@ -118,9 +123,6 @@ export async function extract<T extends { [key: string]: string }>(
                   )
         }))
     }
-
-    // Check status codes
-    if (!checkStatusCodes(parsedResponse.statusCodes)) throw new Error('Invalid status code')
 
     // Check the issuer
     if (parsedResponse.issuer !== options.issuer) throw new Error('Unknown issuer')
