@@ -75,7 +75,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
     })
 }
 
-export async function decrypt(xmlToDecrypt: string, key: string) {
+export async function decryptXML(xmlToDecrypt: string, key: string) {
     const document = new DOMParser().parseFromString(xmlToDecrypt)
     const encryptedAssertions = xpath.select("//*[local-name(.)='EncryptedAssertion']", document)
 

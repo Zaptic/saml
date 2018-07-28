@@ -1,4 +1,4 @@
-import { checkSignature, decrypt, signXML } from './crypto'
+import { checkSignature, decryptXML, signXML } from './crypto'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
 import { loadXSD, validateXML } from './helpers/xml'
@@ -134,7 +134,7 @@ export default class SAMLProvider {
         await validateXML(rawResponse, this.XSDs.protocol)
 
         // Potentially decrypt the assertions
-        const decryptedResponse = await decrypt(rawResponse, this.serviceProvider.encryption!.key)
+        const decryptedResponse = await decryptXML(rawResponse, this.serviceProvider.encryption!.key)
 
         // Check the signature - this should throw if there is an error
         checkSignature(decryptedResponse, this.identityProvider.signature)
