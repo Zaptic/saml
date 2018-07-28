@@ -17,6 +17,7 @@ export default (requestId: string, options: Options) =>
             xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
             xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
         <saml:Issuer>${options.serviceProviderId}</saml:Issuer>
+        <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"/>
     </samlp:AuthnRequest>`
         .replace(/>\n */g, '>')
         .replace(/\n\s*/g, ' ')
