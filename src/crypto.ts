@@ -79,9 +79,10 @@ export async function decryptXML(xmlToDecrypt: string, key: string) {
     const document = new DOMParser().parseFromString(xmlToDecrypt)
     const encryptedAssertions = xpath.select("//*[local-name(.)='EncryptedAssertion']", document)
 
-    // XML does not seem to be encrypted
-    if (!Array.isArray(encryptedAssertions)) return xmlToDecrypt
-    if (encryptedAssertions.length === 0) throw new Error('No encrypted assertions found')
+    // XML does not seem to be encrypted so we return early with the "decrypted" content
+    // We might want to update this at some point to error if the metadata file tells us the assertion
+    // should be encrypted.
+    if (!Array.isArray(encryptedAssertions) || encryptedAssertions.length === 0) return xmlToDecrypt
 
     for (const encryptedAssertion of encryptedAssertions) {
         const assertion = await decryptPromise(encryptedAssertion, key)
