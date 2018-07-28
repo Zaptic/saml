@@ -5,6 +5,7 @@ import * as xpath from 'xpath'
 import * as XmlEncryption from 'xml-encryption'
 
 const algorithmMapping = {
+    sha1: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha1',
     sha256: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
     sha512: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
 }
@@ -42,7 +43,7 @@ export function signXML(
 }
 
 export type CheckSignatureOptions = {
-    algorithm: 'sha256' | 'sha512'
+    algorithm: 'sha256' | 'sha512' | 'sha1'
     allowedCertificates: string[]
 }
 
