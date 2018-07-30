@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { assert } from 'chai'
-import signedAssertion from './resources/responses/signed-assertion.xml'
+import signedAssertion from './resources/assertions/signed-assertion.xml'
 import { checkSignature, decryptXML } from '../crypto'
 
 describe('Crypto.checkSignature', function() {
