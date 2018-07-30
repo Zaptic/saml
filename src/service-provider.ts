@@ -39,6 +39,7 @@ export type Preferences = {
     attributeMapping: { [attribute: string]: string }
     nameIdFormat: string
     addNameIdPolicy: boolean
+    forceAuthenticationByDefault: boolean
 }
 
 export type OptionsWithoutMetadata = {
@@ -84,6 +85,7 @@ export default class SAMLProvider {
             signLoginRequests: true,
             attributeMapping: {},
             addNameIdPolicy: false,
+            forceAuthenticationByDefault: false,
             // User
             ...(options.preferences || {})
         }
@@ -113,7 +115,10 @@ export default class SAMLProvider {
         this.getUUID = options.getUUID
     }
 
-    public async buildLoginRequestRedirectURL(relayState?: string, forceAuthentication = false) {
+    public async buildLoginRequestRedirectURL(
+        relayState?: string,
+        forceAuthentication = this.preferences.forceAuthenticationByDefault
+    ) {
         const request = getLoginXML(await this.getUUID(), {
             serviceProviderId: this.serviceProvider.id,
             assertionUrl: this.serviceProvider.assertionUrl,
