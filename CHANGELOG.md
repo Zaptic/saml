@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2018/07/30
+
 ### Changed
 
 -   `xmldsig-core-schema.xsd` `X509SerialNumber` is now a string. There is an issue with the c library we
