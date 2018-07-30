@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Changed
+
+-   `xmldsig-core-schema.xsd` `X509SerialNumber` is now a string. There is an issue with the c library we
+    are relying on to check the xsd. That issue is due to the fact that the specs for xsd allow limiting
+    the max integer size depending on the processor the checks are running on but at the same time allow
+    for unlimited length integers.  
+    This is documented here because it's an important change to the standard
+    schema.
+
 ## [0.5.1] - 2018/07/30
 
 ### Changed
