@@ -9,7 +9,7 @@ export namespace SAMLLogoutRequest {
             IssueInstant: string
             Destination: string
         }
-        Issuer: string[]
+        Issuer: { _: string }[]
         NameID: {
             _: string
             $: {
@@ -36,7 +36,7 @@ export async function extract(response: string): Promise<LogoutRequest> {
         id: jsonResponse.$.ID,
         issueInstant: jsonResponse.$.IssueInstant,
         destination: jsonResponse.$.Destination,
-        issuer: jsonResponse.Issuer[0],
+        issuer: jsonResponse.Issuer[0]._,
         names: jsonResponse.NameID.map(NameId => NameId._)
     }
 
