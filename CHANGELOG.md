@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2018/07/30
+
 ### Changed
 
 -   Release script tagging strategy - this should not impact the end users
