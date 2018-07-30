@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+-   Release script tagging strategy - this should not impact the end users
+
 ## [0.5.0] - 2018/07/30
 
 ### Added

@@ -17,13 +17,14 @@ npm test
 
 echo "Publishing release..."
 DATE=`date +%Y/%m/%d`
-NEW_VERSION=`npm version "$VERSION" | sed 's/v//'`
+NEW_VERSION=`npm version "$VERSION" --no-git-tag-version | sed 's/v//'`
 
 CHANGELOG_HEADER="## \[Unreleased\]"
 NEW_CHANGELOG_HEADER="## [$NEW_VERSION] - $DATE"
 
 sed -i "s|$CHANGELOG_HEADER|$CHANGELOG_HEADER\n\n$NEW_CHANGELOG_HEADER|" CHANGELOG.md
-git commit --amend --no-edit CHANGELOG.md
+git commit -m "Bump to $NEW_VERSION" CHANGELOG.md package.json package-lock.json
+git tag "$NEW_VERSION"
 
 npm publish --access public
 git push
