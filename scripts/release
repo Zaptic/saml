@@ -11,9 +11,9 @@ rm -rf dist/
 tsc
 
 echo "Checking release..."
-yarn run prettier -l
-yarn run lint
-yarn test
+npm run prettier -l
+npm run lint
+npm test
 
 echo "Publishing release..."
 DATE=`date +%Y/%m/%d`
