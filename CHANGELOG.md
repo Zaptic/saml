@@ -11,6 +11,10 @@
     `buildLoginRequestRedirectURL()` but still be able to sometimes not force the authentication
     By default it is `false` - this preserves the backwards compatibility.
 
+### Changed
+
+-   Release script - this should not impact the end users
+
 ## [0.4.2] - 2018/07/28
 
 There was no changelog prior to this date. If requested we can go through it and add one.
