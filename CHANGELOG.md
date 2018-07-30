@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2018/07/30
+
 ### Added
 
 -   Started the changelog
