@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2018/11/01
+
+### Fixed
+
+-   Allow for query params in idp login url. This means that we can work with login urls that have a query
+    parameter.
+
 ## [1.0.0] - 2018/07/30
 
 ### Changed
