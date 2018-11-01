@@ -68,6 +68,22 @@ describe('SAMLProvider', function() {
         await checkRedirectURL(redirectURL, relayState, provider.XSDs.protocol)
     })
 
+    it('should generate valid redirect urls for identity provider that use query params ', async function() {
+        const loginUrl = 'http://localhost:7000/idp/requestLogin?param=true'
+        // Add a parameter to the login url
+        const opts = {
+            ...options,
+            idp: { ...options.idp, loginUrl }
+        }
+        const provider = await SAMLProvider.create(opts)
+
+        const relayState = 'someState'
+        const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
+
+        // We just make sure that the url is build properly, the other tests will check the data
+        redirectURL.startsWith(loginUrl + '&')
+    })
+
     it('should generate a valid signed login request with ForceAuthn set to true', async function() {
         const provider = await SAMLProvider.create(options)
 

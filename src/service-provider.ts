@@ -1,3 +1,4 @@
+import * as url from 'url'
 import { checkSignature, decryptXML, signXML } from './crypto'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
 import * as xsd from 'libxml-xsd'
@@ -127,6 +128,12 @@ export default class SAMLProvider {
             addNameIdPolicy: this.preferences.addNameIdPolicy
         })
         const xml = this.preferences.signLoginRequests ? signXML(request, this.serviceProvider.signature) : request
+
+        // Google uses SingleSignOnService URLs that have a query param set in them so we need to detect that and build
+        // the url accordingly
+        if (url.parse(this.identityProvider.loginUrl).query) {
+            return this.identityProvider.loginUrl + '&' + (await encodeRedirectParameters(xml, relayState))
+        }
 
         return this.identityProvider.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
     }
