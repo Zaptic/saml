@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2019/06/21
+
 ### Changed
 
--   Replace libxml-xsd by libxmljs as libxml-xsd is not maintained and does not support node >= 9. 
+-   Replace libxml-xsd by libxmljs as libxml-xsd is not maintained and does not support node >= 9.
     This was a problem as we want to keep at least on top of supported LTS versions
 
 -   Having to bump to a minor version because of an npm issue.
