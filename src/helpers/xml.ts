@@ -1,31 +1,25 @@
 import * as path from 'path'
-import * as xsd from 'libxml-xsd'
+import * as xsd from 'libxmljs'
 import * as xml2js from 'xml2js'
+import * as fs from 'fs'
 
-type Validator = { validate: xsd.ValidateFunction }
+export type Validator = (xml: string) => Promise<boolean>
 
-export function loadXSD(toLoad: string) {
-    return new Promise<{ validate: xsd.ValidateFunction }>((resolve, reject) => {
-        const cwd = path.resolve('')
+export function loadXSD(pathToLoad: string): Validator {
+    // See here as to why we need a tailing '/' https://stackoverflow.com/a/46550671/7200410
+    const baseUrl = path.resolve(__dirname, '../../resources/') + '/'
 
-        // see https://github.com/albanm/node-libxml-xsd/issues/11#issuecomment-242591323
-        process.chdir(path.resolve(__dirname, '../../resources/'))
-        xsd.parseFile(path.resolve(toLoad), (error, schema) => {
-            process.chdir(cwd)
-            if (error) return reject(error)
-            resolve(schema)
+    // The any option is actually valid
+    // see here for explanation https://github.com/libxmljs/libxmljs/issues/275#issuecomment-312145331
+    const parsedXsd = xsd.parseXml(fs.readFileSync(path.resolve(baseUrl, pathToLoad), 'utf8'), { baseUrl } as any)
+
+    return (xml: string) =>
+        new Promise<boolean>((resolve, reject) => {
+            const parsedXml = xsd.parseXml(xml, { baseUrl } as any)
+
+            if (parsedXml.validate(parsedXsd)) resolve(true)
+            else reject(parsedXml.validationErrors)
         })
-    })
-}
-
-export function validateXML(xml: string, validator: Validator) {
-    return new Promise((resolve, reject) => {
-        validator.validate(xml, (technicalErrors, validationErrors) => {
-            if (technicalErrors) return reject(`Technical errors: ${technicalErrors}`)
-            if (validationErrors) return reject(`Validation errors: ${validationErrors}`)
-            resolve()
-        })
-    })
 }
 
 export function parseXML<T>(xml: string) {

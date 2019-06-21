@@ -1,8 +1,7 @@
 import * as url from 'url'
 import { checkSignature, decryptXML, signXML } from './crypto'
 import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
-import * as xsd from 'libxml-xsd'
-import { loadXSD, validateXML } from './helpers/xml'
+import { loadXSD, Validator } from './helpers/xml'
 import * as LoginResponse from './login-response'
 import * as Metadata from './metadata'
 import getMetadataXML from './templates/metadata'
@@ -59,8 +58,8 @@ export type OptionsWithMetadata = {
 
 type SAMLProviderOptions = {
     XSDs: {
-        protocol: { validate: xsd.ValidateFunction }
-        metadata: { validate: xsd.ValidateFunction }
+        protocol: Validator
+        metadata: Validator
     }
     preferences: Preferences
     identityProvider: IDPOptions
@@ -75,8 +74,8 @@ function hasMetadata(options: OptionsWithoutMetadata | OptionsWithMetadata): opt
 export default class SAMLProvider {
     public static async create(options: OptionsWithoutMetadata | OptionsWithMetadata) {
         const XSDs = {
-            protocol: await loadXSD('saml-schema-protocol-2.0.xsd'),
-            metadata: await loadXSD('saml-schema-metadata-2.0.xsd')
+            protocol: loadXSD('saml-schema-protocol-2.0.xsd'),
+            metadata: loadXSD('saml-schema-metadata-2.0.xsd')
         }
 
         const preferences = {
@@ -146,7 +145,7 @@ export default class SAMLProvider {
         if (!rawResponse) throw new Error('Empty SAMLResponse')
 
         // Check that the xml is valid
-        await validateXML(rawResponse, this.XSDs.protocol)
+        await this.XSDs.protocol(rawResponse)
 
         // Potentially decrypt the assertions
         const decryptedResponse = await decryptXML(rawResponse, this.serviceProvider.encryption!.key)

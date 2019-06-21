@@ -4,8 +4,7 @@ import { assert } from 'chai'
 import SAMLProvider from '../service-provider'
 import * as querystring from 'querystring'
 import * as zlib from 'zlib'
-import { validateXML } from '../helpers/xml'
-import * as xsd from 'libxml-xsd'
+import { Validator } from '../helpers/xml'
 
 const testCert = fs.readFileSync(path.resolve('./src/spec/resources/cert.pem'), 'utf8')
 const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8')
@@ -34,7 +33,7 @@ describe('SAMLProvider', function() {
         getUUID: () => 'test-uuid'
     }
 
-    function checkRedirectURL(redirectURL: string, relayState: string, schema: { validate: xsd.ValidateFunction }) {
+    function checkRedirectURL(redirectURL: string, relayState: string, validator: Validator) {
         const parts = redirectURL.split('?')
         assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options')
 
@@ -48,7 +47,7 @@ describe('SAMLProvider', function() {
         // Ths is naive but should be enough for now
         assert.include(request, 'Signature', 'Request should be signed')
 
-        return validateXML(request, schema)
+        return validator(request)
     }
 
     it('should generate valid metadata', async function() {
@@ -56,7 +55,7 @@ describe('SAMLProvider', function() {
 
         const metadata = provider.getMetadata()
 
-        await validateXML(metadata, provider.XSDs.metadata!)
+        await provider.XSDs.metadata!(metadata)
     })
 
     it('should generate a valid signed login request', async function() {
@@ -112,6 +111,6 @@ describe('SAMLProvider', function() {
         // Ths is naive but should be enough for now
         assert.notInclude(request, 'Signature', 'Request should not signed')
 
-        await validateXML(request, provider.XSDs.protocol!)
+        await provider.XSDs.protocol!(request)
     })
 })

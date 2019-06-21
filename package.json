@@ -24,6 +24,7 @@
     },
     "devDependencies": {
         "@types/chai": "^4.1.4",
+        "@types/libxmljs": "^0.18.3",
         "@types/mocha": "^5.2.4",
         "@types/node": "^10.5.2",
         "@types/xml2js": "^0.4.3",
@@ -36,7 +37,7 @@
         "typescript": "^2.9.2"
     },
     "dependencies": {
-        "libxml-xsd": "^0.5.2",
+        "libxmljs": "^0.19.5",
         "xml-crypto": "^0.10.1",
         "xml-encryption": "^0.11.2",
         "xml2js": "^0.4.19",
