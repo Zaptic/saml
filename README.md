@@ -16,8 +16,8 @@ It should contain all configuration tied to the service provider.
 These options will be used to generate the service provider metadata file and populate the login requests.
 
 `sp.id`  
-Globally unique identifier that identifies your service provider. This corresponds to the entityId saml field.
-It is often a url as they make it easy to namespace things so long as you own the domain.
+A globally unique identifier that identifies your service provider. This corresponds to the entityId saml field.
+It is often a URL as they make it easy to namespace things so long as you own the domain.
 If your id might contain numbers the saml spec says that the id should start with an "_".
 
 `sp.assertionUrl`  
@@ -40,7 +40,7 @@ If it's a string, it should be a string containing the identity provider's metad
 It is recommended that you use the metadata file as it's easier to maintain than the manually assigned properties.
 
 `idp.id`  
-Globally unique identifier that identifies the identity provider. This corresponds to the entityId saml field.
+A globally unique identifier that identifies the identity provider. This corresponds to the entityId saml field.
 Same restrictions as for the sp id apply.
 
 `idp.loginUrl`  
@@ -51,7 +51,7 @@ This is the object that contains the certificates and signature algorithm that w
 identity provider's assertions
 
 `idp.signature.algorithm`  
-Currently supported are `sha256` and `sha512` this is the algorithm with which the identity provider will sign the
+Currently, supported are `sha256` and `sha512` this is the algorithm with which the identity provider will sign the
 assertions
 
 `idp.signature.allowedCertificates`  
@@ -107,22 +107,21 @@ Example:
 
 Full example:
 ```typescript
-cosnt options = {
+const options = {
     sp: {
         id: 'http://service-provider.zaptic',
         assertionUrl: 'http://localhost:7000/sp/login',
         singleLogoutUrl: 'http://localhost:7000/sp/logout',
-        signature: {
+        signature: [{
             algorithm: <'sha256'>'sha256',
             certificate: testCert,
             key: testKey
-        }
+        }]
     },
     idp: {
         id: 'test-idp',
         loginUrl: 'http://localhost:7000/idp/requestLogin',
         signature: {
-            certificate: testCert,
             algorithm: <'sha256'>'sha256',
             allowedCertificates: []
         }

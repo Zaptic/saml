@@ -15,11 +15,20 @@ describe('SAMLProvider', function() {
             id: 'test-sp',
             assertionUrl: 'http://localhost:7000/sp/login',
             singleLogoutUrl: 'http://localhost:7000/sp/logout',
-            signature: {
-                algorithm: <'sha256'>'sha256',
-                certificate: testCert,
-                key: testKey
-            }
+            signature: [
+                {
+                    algorithm: <'sha256'>'sha256',
+                    certificate: 'MIIE/EXPIRED/Q==',
+                    notAfter: new Date(Date.now() - 100000),
+                    key: testKey
+                },
+                {
+                    algorithm: <'sha256'>'sha256',
+                    certificate: testCert,
+                    notAfter: new Date(Date.now() + 100000),
+                    key: testKey
+                }
+            ]
         },
         idp: {
             id: 'test-idp',

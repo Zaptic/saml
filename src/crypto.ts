@@ -1,6 +1,6 @@
 import { SignedXml } from 'xml-crypto'
 import { DOMParser } from 'xmldom'
-import { toPEM, toX059 } from './helpers/certificate'
+import { Certificate, toPEM, toX059 } from './helpers/certificate'
 import * as xpath from 'xpath'
 import * as XmlEncryption from 'xml-encryption'
 
@@ -15,14 +15,7 @@ const digestMapping = {
     sha512: 'http://www.w3.org/2001/04/xmlenc#sha512'
 }
 
-export function signXML(
-    xmlToSign: string,
-    options: {
-        certificate: string
-        key: string
-        algorithm: 'sha256' | 'sha512'
-    }
-) {
+export function signXML(xmlToSign: string, options: Certificate) {
     const crypto = new SignedXml()
 
     // Add the reference

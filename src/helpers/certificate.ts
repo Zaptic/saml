@@ -17,3 +17,16 @@ export function toPEM(certificate: string) {
     if (!parts) throw new Error('Invalid certificate')
     return BEGIN_CERT + '\n' + parts.join('\n') + '\n' + END_CERT
 }
+
+export interface Certificate {
+    certificate: string
+    key: string
+    notAfter: Date
+    algorithm: 'sha256' | 'sha512'
+}
+
+export function getNonExpired(certificates: Certificate[]): Certificate {
+    const cert = certificates.filter(certificate => certificate.notAfter.getTime() > Date.now())[0]
+    if (!cert) throw new Error('No valid certificates found')
+    return cert
+}

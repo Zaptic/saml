@@ -6,6 +6,7 @@ import * as LoginResponse from './login-response'
 import * as Metadata from './metadata'
 import getMetadataXML from './templates/metadata'
 import getLoginXML from './templates/login-request'
+import { Certificate, getNonExpired } from './helpers/certificate'
 
 export interface IDPOptions {
     id: string
@@ -20,17 +21,9 @@ export interface SPOptions {
     id: string
     singleLogoutUrl: string
     assertionUrl: string
-    signature: {
-        certificate: string
-        key: string
-        algorithm: 'sha256' | 'sha512'
-    }
+    signature: Certificate[]
     // Uses the same certificates as signature if not provided
-    encryption?: {
-        certificate: string // Unused for now
-        key: string
-        algorithm: 'sha256' | 'sha512' // Unused for now
-    }
+    encryption?: Certificate[]
 }
 
 export interface Preferences {
@@ -126,7 +119,9 @@ export default class SAMLProvider {
             forceAuthentication,
             addNameIdPolicy: this.preferences.addNameIdPolicy
         })
-        const xml = this.preferences.signLoginRequests ? signXML(request, this.serviceProvider.signature) : request
+        const xml = this.preferences.signLoginRequests
+            ? signXML(request, getNonExpired(this.serviceProvider.signature))
+            : request
 
         // Google uses SingleSignOnService URLs that have a query param set in them so we need to detect that and build
         // the url accordingly
@@ -148,7 +143,7 @@ export default class SAMLProvider {
         await this.XSDs.protocol(rawResponse)
 
         // Potentially decrypt the assertions
-        const decryptedResponse = await decryptXML(rawResponse, this.serviceProvider.encryption!.key)
+        const decryptedResponse = await decryptXML(rawResponse, getNonExpired(this.serviceProvider.encryption!).key)
 
         // Check the signature - this should throw if there is an error
         checkSignature(decryptedResponse, this.identityProvider.signature)
