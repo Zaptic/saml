@@ -132,7 +132,9 @@ export default class SAMLProvider {
         return this.identityProvider.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
     }
 
-    public async parseLoginResponse(query: { [key: string]: any }) {
+    public async parseLoginResponse<T extends { [key: string]: string }>(query: {
+        [key: string]: any
+    }): Promise<{ response: LoginResponse.LoginResponse<T>; relayState: string }> {
         const relayState: string = query.ReplayState
         const rawResponse: string = query.SAMLResponse && decodePostResponse(query.SAMLResponse)
 
@@ -154,7 +156,11 @@ export default class SAMLProvider {
             strictTimeCheck: this.preferences.strictTimeCheck
         }
 
-        const response = await LoginResponse.extract(decryptedResponse, this.preferences.attributeMapping, checkOptions)
+        const response = await LoginResponse.extract<T>(
+            decryptedResponse,
+            this.preferences.attributeMapping as T,
+            checkOptions
+        )
 
         return { response, relayState }
     }

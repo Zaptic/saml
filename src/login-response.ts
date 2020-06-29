@@ -61,7 +61,7 @@ export namespace SAMLLoginResponse {
     }
 }
 
-interface LoginResponse<T> {
+export interface LoginResponse<T> {
     id: string
     inResponseTo: string
     issuer: string
