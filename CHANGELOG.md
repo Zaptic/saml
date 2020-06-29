@@ -2,10 +2,12 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2020/06/29
+
 ### Breaking change
 
-- Support multiple certificates by allowing an array to be passed to the SP.
-  This means that we now have to pass an array and an extra attribute to tell us when the cert expires
+-   Support multiple certificates by allowing an array to be passed to the SP.
+    This means that we now have to pass an array and an extra attribute to tell us when the cert expires
 
 ## [1.1.0] - 2019/06/21
 
