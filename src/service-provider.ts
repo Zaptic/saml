@@ -7,7 +7,7 @@ import * as Metadata from './metadata'
 import getMetadataXML from './templates/metadata'
 import getLoginXML from './templates/login-request'
 
-export type IDPOptions = {
+export interface IDPOptions {
     id: string
     loginUrl: string
     signature: {
@@ -16,7 +16,7 @@ export type IDPOptions = {
     }
 }
 
-export type SPOptions = {
+export interface SPOptions {
     id: string
     singleLogoutUrl: string
     assertionUrl: string
@@ -33,7 +33,7 @@ export type SPOptions = {
     }
 }
 
-export type Preferences = {
+export interface Preferences {
     signLoginRequests: boolean
     strictTimeCheck: boolean
     attributeMapping: { [attribute: string]: string }
@@ -42,21 +42,21 @@ export type Preferences = {
     forceAuthenticationByDefault: boolean
 }
 
-export type OptionsWithoutMetadata = {
+export interface OptionsWithoutMetadata {
     preferences?: Partial<Preferences>
     getUUID: () => string | Promise<string>
     idp: IDPOptions
     sp: SPOptions
 }
 
-export type OptionsWithMetadata = {
+export interface OptionsWithMetadata {
     preferences?: Partial<Preferences>
     getUUID: () => string | Promise<string>
     idp: string
     sp: SPOptions
 }
 
-type SAMLProviderOptions = {
+interface SAMLProviderOptions {
     XSDs: {
         protocol: Validator
         metadata: Validator

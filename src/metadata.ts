@@ -2,7 +2,7 @@ import { KeyInfo, Signature } from './helpers/saml-types'
 import { parseXML } from './helpers/xml'
 
 export namespace SAMLMetadata {
-    export type Root = {
+    export interface Root {
         $: {
             ID: string
             entityID: string // Use as idp ID
@@ -20,10 +20,12 @@ export namespace SAMLMetadata {
         }[]
     }
 
-    export type Service = { $: { Binding: string; Location: string } }
+    export interface Service {
+        $: { Binding: string; Location: string }
+    }
 }
 
-type Metadata = {
+interface Metadata {
     identityProvider: {
         id: string
         signature: {

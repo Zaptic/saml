@@ -1,6 +1,6 @@
 export type AlgorithmAttribute = { $: { Algorithm: string } }
 
-export type Signature = {
+export interface Signature {
     SignedInfo: {
         CanonicalizationMethod: AlgorithmAttribute[]
         SignatureMethod: AlgorithmAttribute[]
@@ -15,7 +15,7 @@ export type Signature = {
     KeyInfo: KeyInfo[]
 }
 
-export type KeyInfo = {
+export interface KeyInfo {
     X509Data: {
         X509Certificate: { _: string }[]
     }[]

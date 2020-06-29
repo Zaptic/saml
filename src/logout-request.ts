@@ -2,7 +2,7 @@ import { Signature } from './helpers/saml-types'
 import { parseXML } from './helpers/xml'
 
 export namespace SAMLLogoutRequest {
-    export type Root = {
+    export interface Root {
         $: {
             ID: string
             Version: string
@@ -21,7 +21,7 @@ export namespace SAMLLogoutRequest {
     }
 }
 
-type LogoutRequest = {
+interface LogoutRequest {
     id: string
     issueInstant: string
     destination: string

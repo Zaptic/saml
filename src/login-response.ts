@@ -5,7 +5,7 @@ import * as url from 'url'
 import { Signature } from './helpers/saml-types'
 
 export namespace SAMLLoginResponse {
-    export type Root = {
+    export interface Root {
         $: {
             Destination: string
             ID: string
@@ -18,7 +18,7 @@ export namespace SAMLLoginResponse {
         Assertion: Assertion[]
     }
 
-    export type Assertion = {
+    export interface Assertion {
         $: {
             ID: string
             IssueInstant: string
@@ -33,12 +33,12 @@ export namespace SAMLLoginResponse {
         AttributeStatement: { Attribute: Attribute[] }[]
     }
 
-    export type Attribute = {
+    export interface Attribute {
         $: { Name: string }
         AttributeValue: [{ _: string }]
     }
 
-    export type Conditions = {
+    export interface Conditions {
         $: {
             NotBefore: string
             NotOnOrAfter: string
@@ -46,7 +46,7 @@ export namespace SAMLLoginResponse {
         AudienceRestriction: { Audience: { _: string }[] }[]
     }
 
-    export type Subject = {
+    export interface Subject {
         NameID: { _: string }[]
         SubjectConfirmation: {
             $: { Method: string }
@@ -61,7 +61,7 @@ export namespace SAMLLoginResponse {
     }
 }
 
-type LoginResponse<T> = {
+interface LoginResponse<T> {
     id: string
     inResponseTo: string
     issuer: string
@@ -77,7 +77,7 @@ type LoginResponse<T> = {
     }[]
 }
 
-type CheckOptions = {
+interface CheckOptions {
     issuer: string
     audience: string
     strictTimeCheck: boolean

@@ -1,5 +1,5 @@
 declare module 'xml-crypto' {
-    type SignedXmlOptions = {
+    interface SignedXmlOptions {
         prefix?: string
         attrs?: {}
         location?: {

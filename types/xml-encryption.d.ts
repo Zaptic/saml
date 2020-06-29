@@ -1,12 +1,12 @@
 declare module 'xml-encryption' {
-    export type EncryptOptions = {
+    export interface EncryptOptions {
         rsa_pub: string
         pem: string
         encryptionAlgorithm: string
         keyEncryptionAlgorighm: string
     }
 
-    export type DecryptOptions = {
+    export interface DecryptOptions {
         key: string
     }
 
