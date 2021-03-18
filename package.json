@@ -39,7 +39,7 @@
     "dependencies": {
         "libxmljs": "0.19.7",
         "xml-crypto": "0.10.1",
-        "xml-encryption": "0.11.2",
+        "xml-encryption": "1.2.3",
         "xml2js": "0.4.19",
         "xmldom": "0.1.27",
         "xpath": "0.0.27"
