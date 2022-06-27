@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.0.1] - 2022/06/27
+
+### Fixed
+
+-   Updated libxmljs to use patched version from security issue.
+
 ## [2.0.0] - 2020/06/29
 
 ### Breaking change
