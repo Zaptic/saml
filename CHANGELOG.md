@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.0.2] - 2022/06/28
+
+-   Reverted libxmljs due to breaking changes in patch version.
+
 ## [2.0.1] - 2022/06/27
 
 ### Fixed
