@@ -30,7 +30,7 @@
         "@types/xml2js": "0.4.3",
         "@types/xmldom": "0.1.29",
         "chai": "^4.1.2",
-        "mocha": "^5.2.0",
+        "mocha": "^10.2.0",
         "prettier": "^1.13.7",
         "source-map-support": "^0.5.6",
         "tslint": "^5.10.0",
