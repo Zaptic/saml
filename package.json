@@ -1,6 +1,6 @@
 {
     "name": "@zaptic-external/saml",
-    "version": "2.0.5",
+    "version": "2.0.7",
     "description": "Minimal saml service provider with support for sp-initiated redirect login only",
     "main": "dist/service-provider.js",
     "types": "dist/service-provider.d.ts",
