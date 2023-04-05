@@ -8,7 +8,7 @@ fi
 
 echo "Compiling..."
 rm -rf dist/
-tsc
+npx tsc
 
 echo "Checking release..."
 npm run prettier -l
@@ -22,7 +22,7 @@ NEW_VERSION=`npm version "$VERSION" --no-git-tag-version | sed 's/v//'`
 CHANGELOG_HEADER="## \[Unreleased\]"
 NEW_CHANGELOG_HEADER="## [$NEW_VERSION] - $DATE"
 
-sed -i "s|$CHANGELOG_HEADER|$CHANGELOG_HEADER\n\n$NEW_CHANGELOG_HEADER|" CHANGELOG.md
+gsed -i "s|$CHANGELOG_HEADER|$CHANGELOG_HEADER\n\n$NEW_CHANGELOG_HEADER|" CHANGELOG.md
 git commit -m "Bump to $NEW_VERSION" CHANGELOG.md package.json package-lock.json
 git tag "$NEW_VERSION"
 
