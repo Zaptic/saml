@@ -134,7 +134,7 @@ export default class SAMLProvider {
 
     public async parseLoginResponse<T extends { [key: string]: string }>(query: {
         [key: string]: any
-    }): Promise<{ response: LoginResponse.LoginResponse<T>; relayState: string }> {
+    }): Promise<{ response: LoginResponse.LoginResponse; relayState: string }> {
         const relayState: string = query.ReplayState
         const rawResponse: string = query.SAMLResponse && decodePostResponse(query.SAMLResponse)
 

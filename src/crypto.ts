@@ -1,5 +1,5 @@
-import { SignedXml } from 'xml-crypto'
-import { DOMParser } from 'xmldom'
+import { FileKeyInfo, SignedXml } from 'xml-crypto'
+import { DOMParser } from '@xmldom/xmldom'
 import { Certificate, toPEM, toX059 } from './helpers/certificate'
 import * as xpath from 'xpath'
 import * as XmlEncryption from 'xml-encryption'
@@ -15,6 +15,12 @@ const digestMapping = {
     sha512: 'http://www.w3.org/2001/04/xmlenc#sha512'
 }
 
+const authnRequestXPath =
+  '/*[local-name(.)="AuthnRequest" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:protocol"]';
+
+const issuerXPath =
+  '/*[local-name(.)="Issuer" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:assertion"]';
+
 export function signXML(xmlToSign: string, options: Certificate) {
     const crypto = new SignedXml()
 
@@ -29,10 +35,15 @@ export function signXML(xmlToSign: string, options: Certificate) {
     crypto.signingKey = options.key
     crypto.computeSignature(xmlToSign, {
         prefix: 'ds',
-        location: { reference: '/samlp:AuthnRequest/saml:Issuer', action: <'after'>'after' }
+        location: { reference: authnRequestXPath + issuerXPath, action: 'after' },
+        existingPrefixes: { samlp: 'samlp', saml: 'saml' }
     })
 
     return crypto.getSignedXml()
+}
+
+function selectNodes(xpathExpression: string, node: Node): Node[] {
+    return xpath.select(xpathExpression, node) as Node[]
 }
 
 export type CheckSignatureOptions = {
@@ -44,7 +55,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
     const { algorithm, allowedCertificates } = options
 
     const document = new DOMParser().parseFromString(xmlToCheck)
-    const signatures = xpath.select("//*[local-name(.)='Signature']", document)
+    const signatures = selectNodes("//*[local-name(.)='Signature']", document)
 
     if (!Array.isArray(signatures)) throw new Error('Invalid Signature: xpath should return an array')
     if (signatures.length === 0) throw new Error('No signature')
@@ -57,7 +68,8 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
     signatures.forEach(signature => {
         crypto.signatureAlgorithm = algorithmMapping[algorithm]
 
-        const givenCertificate = xpath.select(".//*[local-name(.)='X509Certificate']", signature)[0].firstChild.data
+        const certificateNode = selectNodes(".//*[local-name(.)='X509Certificate']", signature)[0]
+        const givenCertificate = certificateNode.firstChild?.textContent ?? ''
         const normalizedCertificate = toX059(givenCertificate)
 
         if (!allowedCertificates.includes(normalizedCertificate)) throw new Error('Certificate is not allowed')
@@ -71,7 +83,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
 
 export async function decryptXML(xmlToDecrypt: string, key: string) {
     const document = new DOMParser().parseFromString(xmlToDecrypt)
-    const encryptedAssertions = xpath.select("//*[local-name(.)='EncryptedAssertion']", document)
+    const encryptedAssertions = xpath.select("//*[local-name(.)='EncryptedAssertion']", document, true)
 
     // XML does not seem to be encrypted so we return early with the "decrypted" content
     // We might want to update this at some point to error if the metadata file tells us the assertion
@@ -102,15 +114,15 @@ function decryptPromise(encryptedAssertion: string, key: string) {
 // This is used by the xml-crypto library. Docs can be found here:
 // https://github.com/yaronn/xml-crypto#customizing-algorithms
 // It allows us to generate the tags as we want them for the certificate
-class KeyInformationProvider {
-    constructor(private certificate: string) {}
+class KeyInformationProvider implements FileKeyInfo {
+    constructor(public file: string) {}
 
     public getKeyInfo() {
-        const normalizedCert = toX059(this.certificate)
+        const normalizedCert = toX059(this.file)
         return `<ds:X509Data><ds:X509Certificate>${normalizedCert}</ds:X509Certificate></ds:X509Data>`
     }
 
     public getKey() {
-        return toPEM(this.certificate)
+        return Buffer.from(toPEM(this.file), 'utf-8')
     }
 }

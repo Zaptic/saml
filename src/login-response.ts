@@ -61,7 +61,7 @@ export namespace SAMLLoginResponse {
     }
 }
 
-export interface LoginResponse<T> {
+export interface LoginResponse {
     id: string
     inResponseTo: string
     issuer: string
@@ -73,7 +73,7 @@ export interface LoginResponse<T> {
         notBefore: Date
         notOnOrAfter: Date
         audience: string
-        attributes: { [key: string]: string } & { [key in keyof T]: string }
+        attributes: { [key: string]: string }
     }[]
 }
 
@@ -87,7 +87,7 @@ export async function extract<T extends { [key: string]: string }>(
     response: string,
     attributeMapping: T,
     options: CheckOptions
-): Promise<LoginResponse<T>> {
+): Promise<LoginResponse> {
     const jsonResponse = await parseXML<SAMLLoginResponse.Root>(response)
 
     const statusCodes = jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value)
@@ -109,7 +109,7 @@ export async function extract<T extends { [key: string]: string }>(
             subject: assertion.Subject[0].NameID[0]._,
             attributes: !assertion.AttributeStatement
                 ? // Default to an empty object if there are no attributes
-                  <LoginResponse<T>['assertions'][0]['attributes']>{}
+                  <LoginResponse['assertions'][0]['attributes']>{}
                 : assertion.AttributeStatement[0].Attribute.reduce(
                       (accum, attribute: SAMLLoginResponse.Attribute) => {
                           const mappedName = attributeMapping[attribute.$.Name]
@@ -119,7 +119,7 @@ export async function extract<T extends { [key: string]: string }>(
 
                           return accum
                       },
-                      <LoginResponse<T>['assertions'][0]['attributes']>{}
+                      <LoginResponse['assertions'][0]['attributes']>{}
                   )
         }))
     }
