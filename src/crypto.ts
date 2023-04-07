@@ -15,11 +15,9 @@ const digestMapping = {
     sha512: 'http://www.w3.org/2001/04/xmlenc#sha512'
 }
 
-const authnRequestXPath =
-  '/*[local-name(.)="AuthnRequest" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:protocol"]';
+const authnRequestXPath = '/*[local-name(.)="AuthnRequest" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:protocol"]'
 
-const issuerXPath =
-  '/*[local-name(.)="Issuer" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:assertion"]';
+const issuerXPath = '/*[local-name(.)="Issuer" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:assertion"]'
 
 export function signXML(xmlToSign: string, options: Certificate) {
     const crypto = new SignedXml()

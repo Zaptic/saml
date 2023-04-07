@@ -110,17 +110,14 @@ export async function extract<T extends { [key: string]: string }>(
             attributes: !assertion.AttributeStatement
                 ? // Default to an empty object if there are no attributes
                   <LoginResponse['assertions'][0]['attributes']>{}
-                : assertion.AttributeStatement[0].Attribute.reduce(
-                      (accum, attribute: SAMLLoginResponse.Attribute) => {
-                          const mappedName = attributeMapping[attribute.$.Name]
+                : assertion.AttributeStatement[0].Attribute.reduce((accum, attribute: SAMLLoginResponse.Attribute) => {
+                      const mappedName = attributeMapping[attribute.$.Name]
 
-                          if (mappedName) accum[mappedName] = attribute.AttributeValue[0]._
-                          else accum[attribute.$.Name] = attribute.AttributeValue[0]._
+                      if (mappedName) accum[mappedName] = attribute.AttributeValue[0]._
+                      else accum[attribute.$.Name] = attribute.AttributeValue[0]._
 
-                          return accum
-                      },
-                      <LoginResponse['assertions'][0]['attributes']>{}
-                  )
+                      return accum
+                  }, <LoginResponse['assertions'][0]['attributes']>{})
         }))
     }
 
