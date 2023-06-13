@@ -50,6 +50,17 @@ export interface OptionsWithMetadata {
     sp: SPOptions
 }
 
+/*
+ * Data to be inserted into a hidden form and auto-submitted to use the HTTP-POST binding.
+ */
+export interface LoginRequestPostFormData {
+    action: string
+    fields: {
+        SAMLRequest: string
+        RelayState?: string
+    }
+}
+
 interface SAMLProviderOptions {
     XSDs: {
         protocol: Validator
@@ -142,7 +153,7 @@ export default class SAMLProvider {
     public async buildLoginRequestPostFormData(
         relayState?: string,
         forceAuthentication = this.preferences.forceAuthenticationByDefault
-    ) {
+    ): Promise<LoginRequestPostFormData> {
         const xml = await this.buildLoginRequestXML(forceAuthentication)
 
         return { action: this.identityProvider.postLoginUrl, fields: encodePostFormFields(xml, relayState) }

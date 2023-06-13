@@ -29,5 +29,5 @@ export function encodeRedirectParameters(xml: string, RelayState?: string) {
 //     The consumer should insert the data into html form fields and submit.
 export function encodePostFormFields(xml: string, RelayState?: string) {
     const SAMLRequest = Buffer.from(xml).toString('base64')
-    return RelayState ? { SAMLRequest, RelayState } : { SAMLRequest }
+    return { SAMLRequest, RelayState }
 }

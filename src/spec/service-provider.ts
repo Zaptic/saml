@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { assert } from 'chai'
-import SAMLProvider from '../service-provider'
+import SAMLProvider, { LoginRequestPostFormData } from '../service-provider'
 import * as querystring from 'querystring'
 import * as zlib from 'zlib'
 import { Validator } from '../helpers/xml'
@@ -68,7 +68,12 @@ describe('SAMLProvider', function() {
         return checkSamlRequest(request, signed, validator)
     }
 
-    function checkPostFormData(data: any, relayState: string, signed: boolean, validator: Validator) {
+    function checkPostFormData(
+        data: LoginRequestPostFormData,
+        relayState: string,
+        signed: boolean,
+        validator: Validator
+    ) {
         assert.equal(data.action, options.idp.redirectLoginUrl)
         assert.equal(data.fields.RelayState, relayState)
 
