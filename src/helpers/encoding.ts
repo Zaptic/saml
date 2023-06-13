@@ -22,3 +22,12 @@ export function encodeRedirectParameters(xml: string, RelayState?: string) {
         })
     })
 }
+
+// See https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf 3.5.4 Message Encoding
+// TLDR: xml -> base64 -> application/x-www-form-urlencoded
+// NB: This does not handle the final step of form encoding.
+//     The consumer should insert the data into html form fields and submit.
+export function encodePostFormFields(xml: string, RelayState?: string) {
+    const SAMLRequest = Buffer.from(xml).toString('base64')
+    return RelayState ? { SAMLRequest, RelayState } : { SAMLRequest }
+}

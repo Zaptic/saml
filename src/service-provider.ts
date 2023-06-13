@@ -1,6 +1,6 @@
 import * as url from 'url'
 import { checkSignature, decryptXML, signXML } from './crypto'
-import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
+import { decodePostResponse, encodePostFormFields, encodeRedirectParameters } from './helpers/encoding'
 import { loadXSD, Validator } from './helpers/xml'
 import * as LoginResponse from './login-response'
 import * as Metadata from './metadata'
@@ -109,10 +109,7 @@ export default class SAMLProvider {
         this.getUUID = options.getUUID
     }
 
-    public async buildLoginRequestRedirectURL(
-        relayState?: string,
-        forceAuthentication = this.preferences.forceAuthenticationByDefault
-    ) {
+    private async buildLoginRequestXML(forceAuthentication: boolean) {
         const request = getLoginXML(await this.getUUID(), {
             serviceProviderId: this.serviceProvider.id,
             assertionUrl: this.serviceProvider.assertionUrl,
@@ -124,6 +121,15 @@ export default class SAMLProvider {
             ? signXML(request, getNonExpired(this.serviceProvider.signature))
             : request
 
+        return xml
+    }
+
+    public async buildLoginRequestRedirectURL(
+        relayState?: string,
+        forceAuthentication = this.preferences.forceAuthenticationByDefault
+    ) {
+        const xml = await this.buildLoginRequestXML(forceAuthentication)
+
         // Google uses SingleSignOnService URLs that have a query param set in them so we need to detect that and build
         // the url accordingly
         if (url.parse(this.identityProvider.redirectLoginUrl).query) {
@@ -131,6 +137,15 @@ export default class SAMLProvider {
         }
 
         return this.identityProvider.redirectLoginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
+    }
+
+    public async buildLoginRequestPostFormData(
+        relayState?: string,
+        forceAuthentication = this.preferences.forceAuthenticationByDefault
+    ) {
+        const xml = await this.buildLoginRequestXML(forceAuthentication)
+
+        return { action: this.identityProvider.postLoginUrl, fields: encodePostFormFields(xml, relayState) }
     }
 
     public async parseLoginResponse<T extends { [key: string]: string }>(query: {
