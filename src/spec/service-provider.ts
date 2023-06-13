@@ -32,7 +32,8 @@ describe('SAMLProvider', function() {
         },
         idp: {
             id: 'test-idp',
-            loginUrl: 'http://localhost:7000/idp/requestLogin',
+            redirectLoginUrl: 'http://localhost:7000/idp/requestLogin',
+            postLoginUrl: 'http://localhost:7000/idp/requestLogin',
             signature: {
                 certificate: testCert,
                 algorithm: <'sha256'>'sha256',
@@ -44,7 +45,7 @@ describe('SAMLProvider', function() {
 
     function checkRedirectURL(redirectURL: string, relayState: string, validator: Validator) {
         const parts = redirectURL.split('?')
-        assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options')
+        assert.equal(parts[0], options.idp.redirectLoginUrl, 'Login url must be the one provided in the options')
 
         const { SAMLRequest, RelayState } = querystring.parse(parts[1])
 
@@ -77,11 +78,11 @@ describe('SAMLProvider', function() {
     })
 
     it('should generate valid redirect urls for identity provider that use query params ', async function() {
-        const loginUrl = 'http://localhost:7000/idp/requestLogin?param=true'
+        const redirectLoginUrl = 'http://localhost:7000/idp/requestLogin?param=true'
         // Add a parameter to the login url
         const opts = {
             ...options,
-            idp: { ...options.idp, loginUrl }
+            idp: { ...options.idp, redirectLoginUrl }
         }
         const provider = await SAMLProvider.create(opts)
 
@@ -89,7 +90,7 @@ describe('SAMLProvider', function() {
         const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
 
         // We just make sure that the url is build properly, the other tests will check the data
-        redirectURL.startsWith(loginUrl + '&')
+        redirectURL.startsWith(redirectLoginUrl + '&')
     })
 
     it('should generate a valid signed login request with ForceAuthn set to true', async function() {
@@ -108,7 +109,7 @@ describe('SAMLProvider', function() {
         const redirectURL = await provider.buildLoginRequestRedirectURL(relayState)
         const parts = redirectURL.split('?')
 
-        assert.equal(parts[0], options.idp.loginUrl, 'Login url must be the one provided in the options')
+        assert.equal(parts[0], options.idp.redirectLoginUrl, 'Login url must be the one provided in the options')
 
         const { SAMLRequest, RelayState } = querystring.parse(parts[1])
 

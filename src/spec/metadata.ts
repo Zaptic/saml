@@ -15,7 +15,8 @@ describe('Metadata.extract', function() {
                     algorithm: 'sha256',
                     allowedCertificates: ['SignCert31', 'SignCert32', 'SignCert33']
                 },
-                loginUrl: 'https://login.microsoftonline.com/id/saml2'
+                redirectLoginUrl: 'https://login.microsoftonline.com/id/saml2',
+                postLoginUrl: 'https://login.microsoftonline.com/id/saml2'
             }
         }
 
@@ -36,6 +37,17 @@ describe('Metadata.extract', function() {
             ''
         )
         const expectedError = 'No login url found for the HTTP-Redirect binding'
+
+        await assertPromiseRejects(extract(xml), expectedError)
+    })
+
+    it('should throw an error if there are not login urls for the HTTP-POST Binding', async function() {
+        const xml = getMetadata().replace(
+            '<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" ' +
+                'Location="https://login.microsoftonline.com/id/saml2" />',
+            ''
+        )
+        const expectedError = 'No login url found for the HTTP-POST binding'
 
         await assertPromiseRejects(extract(xml), expectedError)
     })

@@ -10,7 +10,8 @@ import { Certificate, getNonExpired } from './helpers/certificate'
 
 export interface IDPOptions {
     id: string
-    loginUrl: string
+    redirectLoginUrl: string
+    postLoginUrl: string
     signature: {
         algorithm: 'sha256' | 'sha512'
         allowedCertificates: string[]
@@ -115,7 +116,7 @@ export default class SAMLProvider {
         const request = getLoginXML(await this.getUUID(), {
             serviceProviderId: this.serviceProvider.id,
             assertionUrl: this.serviceProvider.assertionUrl,
-            loginUrl: this.identityProvider.loginUrl,
+            loginUrl: this.identityProvider.redirectLoginUrl,
             forceAuthentication,
             addNameIdPolicy: this.preferences.addNameIdPolicy
         })
@@ -125,11 +126,11 @@ export default class SAMLProvider {
 
         // Google uses SingleSignOnService URLs that have a query param set in them so we need to detect that and build
         // the url accordingly
-        if (url.parse(this.identityProvider.loginUrl).query) {
-            return this.identityProvider.loginUrl + '&' + (await encodeRedirectParameters(xml, relayState))
+        if (url.parse(this.identityProvider.redirectLoginUrl).query) {
+            return this.identityProvider.redirectLoginUrl + '&' + (await encodeRedirectParameters(xml, relayState))
         }
 
-        return this.identityProvider.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
+        return this.identityProvider.redirectLoginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
     }
 
     public async parseLoginResponse<T extends { [key: string]: string }>(query: {
