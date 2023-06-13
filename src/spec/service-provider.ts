@@ -63,7 +63,7 @@ describe('SAMLProvider', function() {
         assert.equal(RelayState, relayState, 'Relay states do not match')
         assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
 
-        const request = zlib.inflateRawSync(new Buffer(<string>SAMLRequest, 'base64')).toString('utf8')
+        const request = zlib.inflateRawSync(Buffer.from(<string>SAMLRequest, 'base64')).toString('utf8')
 
         return checkSamlRequest(request, signed, validator)
     }
