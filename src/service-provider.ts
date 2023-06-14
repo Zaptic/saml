@@ -1,6 +1,6 @@
 import * as url from 'url'
 import { checkSignature, decryptXML, signXML } from './crypto'
-import { decodePostResponse, encodeRedirectParameters } from './helpers/encoding'
+import { decodePostResponse, encodePostFormFields, encodeRedirectParameters } from './helpers/encoding'
 import { loadXSD, Validator } from './helpers/xml'
 import * as LoginResponse from './login-response'
 import * as Metadata from './metadata'
@@ -10,7 +10,8 @@ import { Certificate, getNonExpired } from './helpers/certificate'
 
 export interface IDPOptions {
     id: string
-    loginUrl: string
+    redirectLoginUrl: string
+    postLoginUrl: string
     signature: {
         algorithm: 'sha256' | 'sha512'
         allowedCertificates: string[]
@@ -47,6 +48,17 @@ export interface OptionsWithMetadata {
     getUUID: () => string | Promise<string>
     idp: string
     sp: SPOptions
+}
+
+/**
+ * Data to be inserted into a hidden form and auto-submitted to use the HTTP-POST binding.
+ */
+export interface LoginRequestPostFormData {
+    action: string
+    fields: {
+        SAMLRequest: string
+        RelayState?: string
+    }
 }
 
 interface SAMLProviderOptions {
@@ -108,14 +120,11 @@ export default class SAMLProvider {
         this.getUUID = options.getUUID
     }
 
-    public async buildLoginRequestRedirectURL(
-        relayState?: string,
-        forceAuthentication = this.preferences.forceAuthenticationByDefault
-    ) {
+    private async buildLoginRequestXML(forceAuthentication: boolean) {
         const request = getLoginXML(await this.getUUID(), {
             serviceProviderId: this.serviceProvider.id,
             assertionUrl: this.serviceProvider.assertionUrl,
-            loginUrl: this.identityProvider.loginUrl,
+            loginUrl: this.identityProvider.redirectLoginUrl,
             forceAuthentication,
             addNameIdPolicy: this.preferences.addNameIdPolicy
         })
@@ -123,13 +132,31 @@ export default class SAMLProvider {
             ? signXML(request, getNonExpired(this.serviceProvider.signature))
             : request
 
+        return xml
+    }
+
+    public async buildLoginRequestRedirectURL(
+        relayState?: string,
+        forceAuthentication = this.preferences.forceAuthenticationByDefault
+    ) {
+        const xml = await this.buildLoginRequestXML(forceAuthentication)
+
         // Google uses SingleSignOnService URLs that have a query param set in them so we need to detect that and build
         // the url accordingly
-        if (url.parse(this.identityProvider.loginUrl).query) {
-            return this.identityProvider.loginUrl + '&' + (await encodeRedirectParameters(xml, relayState))
+        if (url.parse(this.identityProvider.redirectLoginUrl).query) {
+            return this.identityProvider.redirectLoginUrl + '&' + (await encodeRedirectParameters(xml, relayState))
         }
 
-        return this.identityProvider.loginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
+        return this.identityProvider.redirectLoginUrl + '?' + (await encodeRedirectParameters(xml, relayState))
+    }
+
+    public async buildLoginRequestPostFormData(
+        relayState?: string,
+        forceAuthentication = this.preferences.forceAuthenticationByDefault
+    ): Promise<LoginRequestPostFormData> {
+        const xml = await this.buildLoginRequestXML(forceAuthentication)
+
+        return { action: this.identityProvider.postLoginUrl, fields: encodePostFormFields(xml, relayState) }
     }
 
     public async parseLoginResponse<T extends { [key: string]: string }>(query: {

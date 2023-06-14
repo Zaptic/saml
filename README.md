@@ -2,8 +2,7 @@
 
 # Simple, secure SAML service provider
 
-This library provides with a simple and secure SAML service provider.  
-At the moment it supports only service provider initiated login (using redirect binding) but more will come.
+This library provides with a simple and secure SAML service provider.
 
 ## Options
 
@@ -44,8 +43,11 @@ It is recommended that you use the metadata file as it's easier to maintain than
 A globally unique identifier that identifies the identity provider. This corresponds to the entityId saml field.
 Same restrictions as for the sp id apply.
 
-`idp.loginUrl`  
-The url that we should send auth requests to
+`idp.loginRedirectUrl`  
+The url that we should send auth requests using the HTTP-Redirect binding to
+
+`idp.loginPostUrl`  
+The url that we should send auth requests using the HTTP-POST binding to
 
 `idp.signature`  
 This is the object that contains the certificates and signature algorithm that we should accept for signing the
@@ -124,7 +126,8 @@ const options = {
     },
     idp: {
         id: 'test-idp',
-        loginUrl: 'http://localhost:7000/idp/requestLogin',
+        loginRedirectUrl: 'http://localhost:7000/idp/requestLogin',
+        loginPostUrl: 'http://localhost:7000/idp/requestLogin',
         signature: {
             algorithm: <'sha256'>'sha256',
             allowedCertificates: []

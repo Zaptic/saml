@@ -32,7 +32,8 @@ interface Metadata {
             allowedCertificates: string[]
             algorithm: 'sha256' | 'sha512'
         }
-        loginUrl: string
+        redirectLoginUrl: string
+        postLoginUrl: string
     }
 }
 
@@ -55,8 +56,12 @@ export async function extract(xml: string): Promise<Metadata> {
                 )
             },
 
-            loginUrl: idpDescriptor.SingleSignOnService.filter(
+            redirectLoginUrl: idpDescriptor.SingleSignOnService.filter(
                 service => service.$.Binding === 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
+            ).map(service => service.$.Location)[0],
+
+            postLoginUrl: idpDescriptor.SingleSignOnService.filter(
+                service => service.$.Binding === 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
             ).map(service => service.$.Location)[0]
         }
     })
@@ -64,7 +69,8 @@ export async function extract(xml: string): Promise<Metadata> {
     // We only support one idp for the moment
     const identityProvider = identityProviders[0]
 
-    if (!identityProvider.loginUrl) throw new Error('No login url found for the HTTP-Redirect binding')
+    if (!identityProvider.redirectLoginUrl) throw new Error('No login url found for the HTTP-Redirect binding')
+    if (!identityProvider.postLoginUrl) throw new Error('No login url found for the HTTP-POST binding')
     if (identityProvider.signature.allowedCertificates.length === 0) throw new Error('No signing certificates found')
 
     return { identityProvider }
