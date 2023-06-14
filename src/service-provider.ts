@@ -120,21 +120,6 @@ export default class SAMLProvider {
         this.getUUID = options.getUUID
     }
 
-    private async buildLoginRequestXML(forceAuthentication: boolean) {
-        const request = getLoginXML(await this.getUUID(), {
-            serviceProviderId: this.serviceProvider.id,
-            assertionUrl: this.serviceProvider.assertionUrl,
-            loginUrl: this.identityProvider.redirectLoginUrl,
-            forceAuthentication,
-            addNameIdPolicy: this.preferences.addNameIdPolicy
-        })
-        const xml = this.preferences.signLoginRequests
-            ? signXML(request, getNonExpired(this.serviceProvider.signature))
-            : request
-
-        return xml
-    }
-
     public async buildLoginRequestRedirectURL(
         relayState?: string,
         forceAuthentication = this.preferences.forceAuthenticationByDefault
@@ -194,5 +179,20 @@ export default class SAMLProvider {
 
     public getMetadata() {
         return getMetadataXML(this.serviceProvider, this.preferences.nameIdFormat)
+    }
+
+    private async buildLoginRequestXML(forceAuthentication: boolean) {
+        const request = getLoginXML(await this.getUUID(), {
+            serviceProviderId: this.serviceProvider.id,
+            assertionUrl: this.serviceProvider.assertionUrl,
+            loginUrl: this.identityProvider.redirectLoginUrl,
+            forceAuthentication,
+            addNameIdPolicy: this.preferences.addNameIdPolicy
+        })
+        const xml = this.preferences.signLoginRequests
+            ? signXML(request, getNonExpired(this.serviceProvider.signature))
+            : request
+
+        return xml
     }
 }
