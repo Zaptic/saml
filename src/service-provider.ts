@@ -50,7 +50,7 @@ export interface OptionsWithMetadata {
     sp: SPOptions
 }
 
-/*
+/**
  * Data to be inserted into a hidden form and auto-submitted to use the HTTP-POST binding.
  */
 export interface LoginRequestPostFormData {
