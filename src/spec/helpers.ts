@@ -4,9 +4,9 @@ export function assertPromiseRejects<T>(promise: Promise<T>, message: string) {
     let isFulfilled = false
 
     return promise
-        .catch(error => {
+        .catch((error) => {
             isFulfilled = true
             assert.equal(error.message, message)
         })
-        .then(_ => !isFulfilled && assert.fail(null, null, 'Promise should have been rejected'))
+        .then((_) => !isFulfilled && assert.fail(null, null, 'Promise should have been rejected'))
 }

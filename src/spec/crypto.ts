@@ -4,7 +4,7 @@ import { assert } from 'chai'
 import signedAssertion from './resources/responses/signed-assertion.xml'
 import { checkSignature, decryptXML } from '../crypto'
 
-describe('Crypto.checkSignature', function() {
+describe('Crypto.checkSignature', function () {
     // This is the certificate the assertions were signed with
     const allowedCertificate =
         'MIICajCCAdOgAwIBAgIBADANBgkqhkiG9w0BAQ0FADBSMQswCQYDVQQGEwJ1czETMBEGA1UECAwKQ2FsaWZvcm5pYT' +
@@ -20,11 +20,11 @@ describe('Crypto.checkSignature', function() {
 
     const validOptions = { allowedCertificates: [allowedCertificate], algorithm: <'sha1'>'sha1' }
 
-    it('should should not throw when validating a correctly signed assertion', async function() {
+    it('should should not throw when validating a correctly signed assertion', async function () {
         assert.doesNotThrow(() => checkSignature(signedAssertion(), validOptions))
     })
 
-    it('should throw an error when the signing certificate does not match an allowed certificate', async function() {
+    it('should throw an error when the signing certificate does not match an allowed certificate', async function () {
         const expectedError = 'Certificate is not allowed'
 
         // Throws when there are not allowed certs
@@ -38,20 +38,20 @@ describe('Crypto.checkSignature', function() {
             () =>
                 checkSignature(signedAssertion(), {
                     allowedCertificates: [allowedCertificate + 'a'],
-                    algorithm: 'sha1'
+                    algorithm: 'sha1',
                 }),
             expectedError
         )
     })
 
-    it('should throw an error when the assertion has been tempered with', async function() {
+    it('should throw an error when the assertion has been tempered with', async function () {
         // Change one of the dates in the assertion
         const assertion = signedAssertion().replace('2014-07-17T01:01:18Z', new Date().toISOString())
 
         assert.throws(() => checkSignature(assertion, validOptions), 'One of the provided signatures is not valid')
     })
 
-    it('should throw an error when there is no signature', async function() {
+    it('should throw an error when there is no signature', async function () {
         // Change one of the dates in the assertion
         const assertion = signedAssertion().replace(/<ds:Signature(.|\n)*<\/ds:Signature>/gm, '')
 
@@ -59,10 +59,10 @@ describe('Crypto.checkSignature', function() {
     })
 })
 
-describe('Crypto.decryptXML', function() {
+describe('Crypto.decryptXML', function () {
     const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8')
 
-    it('should should change the content of an request that is not encrypted', async function() {
+    it('should should change the content of an request that is not encrypted', async function () {
         const result = await decryptXML(signedAssertion(), testKey)
         assert.equal(result, signedAssertion())
     })

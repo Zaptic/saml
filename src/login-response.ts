@@ -90,7 +90,7 @@ export async function extract<T extends { [key: string]: string }>(
 ): Promise<LoginResponse> {
     const jsonResponse = await parseXML<SAMLLoginResponse.Root>(response)
 
-    const statusCodes = jsonResponse.Status[0].StatusCode.map(statusCode => statusCode.$.Value)
+    const statusCodes = jsonResponse.Status[0].StatusCode.map((statusCode) => statusCode.$.Value)
 
     // Check status codes
     if (!checkStatusCodes(statusCodes)) throw new Error('Invalid status code')
@@ -100,7 +100,7 @@ export async function extract<T extends { [key: string]: string }>(
         inResponseTo: jsonResponse.$.InResponseTo,
         issuer: jsonResponse.Issuer[0]._,
         statusCodes,
-        assertions: jsonResponse.Assertion.map(assertion => ({
+        assertions: jsonResponse.Assertion.map((assertion) => ({
             issuer: assertion.Issuer[0]._,
             sessionIndex: assertion.AuthnStatement[0].$.SessionIndex,
             notBefore: new Date(assertion.Conditions[0].$.NotBefore),
@@ -110,15 +110,18 @@ export async function extract<T extends { [key: string]: string }>(
             attributes: !assertion.AttributeStatement
                 ? // Default to an empty object if there are no attributes
                   <LoginResponse['assertions'][0]['attributes']>{}
-                : assertion.AttributeStatement[0].Attribute.reduce((accum, attribute: SAMLLoginResponse.Attribute) => {
-                      const mappedName = attributeMapping[attribute.$.Name]
+                : assertion.AttributeStatement[0].Attribute.reduce(
+                      (accum, attribute: SAMLLoginResponse.Attribute) => {
+                          const mappedName = attributeMapping[attribute.$.Name]
 
-                      if (mappedName) accum[mappedName] = attribute.AttributeValue[0]._
-                      else accum[attribute.$.Name] = attribute.AttributeValue[0]._
+                          if (mappedName) accum[mappedName] = attribute.AttributeValue[0]._
+                          else accum[attribute.$.Name] = attribute.AttributeValue[0]._
 
-                      return accum
-                  }, <LoginResponse['assertions'][0]['attributes']>{})
-        }))
+                          return accum
+                      },
+                      <LoginResponse['assertions'][0]['attributes']>{}
+                  ),
+        })),
     }
 
     // Check the issuer
@@ -128,7 +131,7 @@ export async function extract<T extends { [key: string]: string }>(
     // If this leads to issues then we can make the prefix a parameter
     const expectedAudience = url.parse(options.audience).hostname ? options.audience : 'spn:' + options.audience
 
-    parsedResponse.assertions.forEach(assertion => {
+    parsedResponse.assertions.forEach((assertion) => {
         // Check the audience
         if (assertion.audience !== expectedAudience) throw new Error('Unexpected audience')
 

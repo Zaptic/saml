@@ -9,7 +9,7 @@ import { Validator } from '../helpers/xml'
 const testCert = fs.readFileSync(path.resolve('./src/spec/resources/cert.pem'), 'utf8')
 const testKey = fs.readFileSync(path.resolve('./src/spec/resources/key.pem'), 'utf8')
 
-describe('SAMLProvider', function() {
+describe('SAMLProvider', function () {
     const options = {
         sp: {
             id: 'test-sp',
@@ -20,15 +20,15 @@ describe('SAMLProvider', function() {
                     algorithm: <'sha256'>'sha256',
                     certificate: 'MIIE/EXPIRED/Q==',
                     notAfter: new Date(Date.now() - 100000),
-                    key: testKey
+                    key: testKey,
                 },
                 {
                     algorithm: <'sha256'>'sha256',
                     certificate: testCert,
                     notAfter: new Date(Date.now() + 100000),
-                    key: testKey
-                }
-            ]
+                    key: testKey,
+                },
+            ],
         },
         idp: {
             id: 'test-idp',
@@ -37,10 +37,10 @@ describe('SAMLProvider', function() {
             signature: {
                 certificate: testCert,
                 algorithm: <'sha256'>'sha256',
-                allowedCertificates: []
-            }
+                allowedCertificates: [],
+            },
         },
-        getUUID: () => 'test-uuid'
+        getUUID: () => 'test-uuid',
     }
 
     function checkSamlRequest(samlRequest: string, signed: boolean, validator: Validator) {
@@ -81,7 +81,7 @@ describe('SAMLProvider', function() {
         return checkSamlRequest(request, signed, validator)
     }
 
-    it('should generate valid metadata', async function() {
+    it('should generate valid metadata', async function () {
         const provider = await SAMLProvider.create(options)
 
         const metadata = provider.getMetadata()
@@ -89,7 +89,7 @@ describe('SAMLProvider', function() {
         await provider.XSDs.metadata!(metadata)
     })
 
-    it('should generate a valid signed login request', async function() {
+    it('should generate a valid signed login request', async function () {
         const provider = await SAMLProvider.create(options)
 
         const relayState = 'someState'
@@ -100,12 +100,12 @@ describe('SAMLProvider', function() {
         await checkPostFormData(postFormData, relayState, true, provider.XSDs.protocol)
     })
 
-    it('should generate valid redirect urls for identity provider that use query params ', async function() {
+    it('should generate valid redirect urls for identity provider that use query params ', async function () {
         const redirectLoginUrl = 'http://localhost:7000/idp/requestLogin?param=true'
         // Add a parameter to the login url
         const opts = {
             ...options,
-            idp: { ...options.idp, redirectLoginUrl }
+            idp: { ...options.idp, redirectLoginUrl },
         }
         const provider = await SAMLProvider.create(opts)
 
@@ -116,7 +116,7 @@ describe('SAMLProvider', function() {
         redirectURL.startsWith(redirectLoginUrl + '&')
     })
 
-    it('should generate a valid signed login request with ForceAuthn set to true', async function() {
+    it('should generate a valid signed login request with ForceAuthn set to true', async function () {
         const provider = await SAMLProvider.create(options)
 
         const relayState = 'someState'
@@ -127,7 +127,7 @@ describe('SAMLProvider', function() {
         await checkPostFormData(postFormData, relayState, true, provider.XSDs.protocol)
     })
 
-    it('should generate a valid non-signed login request', async function() {
+    it('should generate a valid non-signed login request', async function () {
         const provider = await SAMLProvider.create({ ...options, preferences: { signLoginRequests: false } })
 
         const relayState = 'someState'

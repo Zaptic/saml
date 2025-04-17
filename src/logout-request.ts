@@ -37,7 +37,7 @@ export async function extract(response: string): Promise<LogoutRequest> {
         issueInstant: jsonResponse.$.IssueInstant,
         destination: jsonResponse.$.Destination,
         issuer: jsonResponse.Issuer[0],
-        names: jsonResponse.NameID.map(NameId => NameId._)
+        names: jsonResponse.NameID.map((NameId) => NameId._),
     }
 
     return parsedResponse

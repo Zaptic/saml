@@ -80,7 +80,7 @@ export default class SAMLProvider {
     public static async create(options: OptionsWithoutMetadata | OptionsWithMetadata) {
         const XSDs = {
             protocol: loadXSD('saml-schema-protocol-2.0.xsd'),
-            metadata: loadXSD('saml-schema-metadata-2.0.xsd')
+            metadata: loadXSD('saml-schema-metadata-2.0.xsd'),
         }
 
         const preferences = {
@@ -92,7 +92,7 @@ export default class SAMLProvider {
             addNameIdPolicy: false,
             forceAuthenticationByDefault: false,
             // User
-            ...(options.preferences || {})
+            ...(options.preferences || {}),
         }
         const identityProvider = hasMetadata(options)
             ? (await Metadata.extract(options.idp)).identityProvider
@@ -165,7 +165,7 @@ export default class SAMLProvider {
         const checkOptions = {
             issuer: this.identityProvider.id,
             audience: this.serviceProvider.id,
-            strictTimeCheck: this.preferences.strictTimeCheck
+            strictTimeCheck: this.preferences.strictTimeCheck,
         }
 
         const response = await LoginResponse.extract<T>(
@@ -187,7 +187,7 @@ export default class SAMLProvider {
             assertionUrl: this.serviceProvider.assertionUrl,
             loginUrl: this.identityProvider.redirectLoginUrl,
             forceAuthentication,
-            addNameIdPolicy: this.preferences.addNameIdPolicy
+            addNameIdPolicy: this.preferences.addNameIdPolicy,
         })
         const xml = this.preferences.signLoginRequests
             ? signXML(request, getNonExpired(this.serviceProvider.signature))

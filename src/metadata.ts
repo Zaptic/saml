@@ -42,7 +42,7 @@ export async function extract(xml: string): Promise<Metadata> {
 
     if (!json.IDPSSODescriptor) throw new Error('The metadata files does not seem to be from an identity provider')
 
-    const identityProviders = json.IDPSSODescriptor.map(idpDescriptor => {
+    const identityProviders = json.IDPSSODescriptor.map((idpDescriptor) => {
         if (!idpDescriptor.KeyDescriptor) throw new Error('No signing certificates found')
 
         return {
@@ -50,19 +50,19 @@ export async function extract(xml: string): Promise<Metadata> {
             signature: {
                 algorithm: <'sha256'>'sha256', // Default for now
                 allowedCertificates: idpDescriptor.KeyDescriptor.filter(
-                    keyDescriptor => keyDescriptor.$.use === 'signing'
-                ).map(keyDescriptor =>
+                    (keyDescriptor) => keyDescriptor.$.use === 'signing'
+                ).map((keyDescriptor) =>
                     keyDescriptor.KeyInfo[0].X509Data[0].X509Certificate[0]._.replace(/(\n|\s)*/g, '')
-                )
+                ),
             },
 
             redirectLoginUrl: idpDescriptor.SingleSignOnService.filter(
-                service => service.$.Binding === 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
-            ).map(service => service.$.Location)[0],
+                (service) => service.$.Binding === 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
+            ).map((service) => service.$.Location)[0],
 
             postLoginUrl: idpDescriptor.SingleSignOnService.filter(
-                service => service.$.Binding === 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
-            ).map(service => service.$.Location)[0]
+                (service) => service.$.Binding === 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+            ).map((service) => service.$.Location)[0],
         }
     })
 

@@ -29,7 +29,7 @@ export function parseXML<T>(xml: string) {
             attrNameProcessors: [xml2js.processors.stripPrefix],
             explicitCharkey: true,
             explicitArray: true,
-            explicitRoot: false
+            explicitRoot: false,
         }
 
         xml2js.parseString(xml, options, (error, result) => {

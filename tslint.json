@@ -26,13 +26,7 @@
         "quotemark": [true, "single", "avoid-escape"],
         "semicolon": false,
         "space-before-function-paren": [true, { "asyncArrow": "always" }],
-        "trailing-comma": [
-            true,
-            {
-                "multiline": "never",
-                "singleline": "never"
-            }
-        ],
+        "trailing-comma": false,
         "whitespace": false
     }
 }

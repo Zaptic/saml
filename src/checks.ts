@@ -14,8 +14,8 @@ export function checkStatusCodes(statuses: string[]) {
         'urn:oasis:names:tc:SAML:2.0:status:Success',
         'urn:oasis:names:tc:SAML:2.0:status:Requester',
         'urn:oasis:names:tc:SAML:2.0:status:Responder',
-        'urn:oasis:names:tc:SAML:2.0:status:VersionMismatch'
+        'urn:oasis:names:tc:SAML:2.0:status:VersionMismatch',
     ]
 
-    return statuses.every(status => permissibleStatuses.includes(status))
+    return statuses.every((status) => permissibleStatuses.includes(status))
 }

@@ -120,9 +120,9 @@ const options = {
             {
                 algorithm: <'sha256'>'sha256',
                 certificate: testCert,
-                key: testKey
-            }
-        ]
+                key: testKey,
+            },
+        ],
     },
     idp: {
         id: 'test-idp',
@@ -130,8 +130,8 @@ const options = {
         loginPostUrl: 'http://localhost:7000/idp/requestLogin',
         signature: {
             algorithm: <'sha256'>'sha256',
-            allowedCertificates: []
-        }
+            allowedCertificates: [],
+        },
     },
     preferences: {
         forceAuthenticationByDefault: true,
@@ -140,9 +140,9 @@ const options = {
         addNameIdPolicy: true,
         attributeMapping: {
             'http://schemas.microsoft.com/identity/claims/objectidentifier': 'id',
-            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name': 'email'
-        }
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name': 'email',
+        },
     },
-    getUUID: () => 'test-uuid'
+    getUUID: () => 'test-uuid',
 }
 ```

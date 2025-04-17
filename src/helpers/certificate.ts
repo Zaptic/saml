@@ -26,7 +26,7 @@ export interface Certificate {
 }
 
 export function getNonExpired(certificates: Certificate[]): Certificate {
-    const cert = certificates.filter(certificate => certificate.notAfter.getTime() > Date.now())[0]
+    const cert = certificates.filter((certificate) => certificate.notAfter.getTime() > Date.now())[0]
     if (!cert) throw new Error('No valid certificates found')
     return cert
 }

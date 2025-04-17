@@ -7,12 +7,12 @@ import * as XmlEncryption from 'xml-encryption'
 const algorithmMapping = {
     sha1: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha1',
     sha256: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
-    sha512: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
+    sha512: 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512',
 }
 
 const digestMapping = {
     sha256: 'http://www.w3.org/2001/04/xmlenc#sha256',
-    sha512: 'http://www.w3.org/2001/04/xmlenc#sha512'
+    sha512: 'http://www.w3.org/2001/04/xmlenc#sha512',
 }
 
 const authnRequestXPath = '/*[local-name(.)="AuthnRequest" and namespace-uri(.)="urn:oasis:names:tc:SAML:2.0:protocol"]'
@@ -34,7 +34,7 @@ export function signXML(xmlToSign: string, options: Certificate) {
     crypto.computeSignature(xmlToSign, {
         prefix: 'ds',
         location: { reference: authnRequestXPath + issuerXPath, action: 'after' },
-        existingPrefixes: { samlp: 'samlp', saml: 'saml' }
+        existingPrefixes: { samlp: 'samlp', saml: 'saml' },
     })
 
     return crypto.getSignedXml()
@@ -63,7 +63,7 @@ export function checkSignature(xmlToCheck: string, options: CheckSignatureOption
 
     const crypto = new SignedXml()
 
-    signatures.forEach(signature => {
+    signatures.forEach((signature) => {
         crypto.signatureAlgorithm = algorithmMapping[algorithm]
 
         const certificateNode = selectNodes(".//*[local-name(.)='X509Certificate']", signature)[0]
