@@ -25,7 +25,6 @@
     },
     "devDependencies": {
         "@types/chai": "^4.1.4",
-        "@types/libxmljs": "0.18.3",
         "@types/mocha": "^5.2.4",
         "@types/node": "^10.5.2",
         "@types/xml-crypto": "^1.4.2",
@@ -42,10 +41,10 @@
     },
     "dependencies": {
         "@xmldom/xmldom": "^0.8.7",
-        "libxmljs": "^1.0.8",
+        "libxmljs2": "^0.37.0",
         "xml-crypto": "^3.0.1",
         "xml-encryption": "^3.0.2",
-        "xml2js": "^0.4.23",
+        "xml2js": "^0.6.2",
         "xpath": "^0.0.32"
     }
 }

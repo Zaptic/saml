@@ -17,13 +17,13 @@ describe('SAMLProvider', function () {
             singleLogoutUrl: 'http://localhost:7000/sp/logout',
             signature: [
                 {
-                    algorithm: <'sha256'>'sha256',
+                    algorithm: 'sha256' as const,
                     certificate: 'MIIE/EXPIRED/Q==',
                     notAfter: new Date(Date.now() - 100000),
                     key: testKey,
                 },
                 {
-                    algorithm: <'sha256'>'sha256',
+                    algorithm: 'sha256' as const,
                     certificate: testCert,
                     notAfter: new Date(Date.now() + 100000),
                     key: testKey,
@@ -36,7 +36,7 @@ describe('SAMLProvider', function () {
             postLoginUrl: 'http://localhost:7000/idp/requestLogin',
             signature: {
                 certificate: testCert,
-                algorithm: <'sha256'>'sha256',
+                algorithm: 'sha256' as const,
                 allowedCertificates: [],
             },
         },
@@ -63,7 +63,7 @@ describe('SAMLProvider', function () {
         assert.equal(RelayState, relayState, 'Relay states do not match')
         assert.isDefined(SAMLRequest, 'Query should have a SAMLRequest attribute')
 
-        const request = zlib.inflateRawSync(Buffer.from(<string>SAMLRequest, 'base64')).toString('utf8')
+        const request = zlib.inflateRawSync(Buffer.from(SAMLRequest as string, 'base64')).toString('utf8')
 
         return checkSamlRequest(request, signed, validator)
     }
