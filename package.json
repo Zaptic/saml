@@ -7,7 +7,7 @@
     "author": "Ben <ben@zaptic.com>",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Zaptic/saml"
+        "url": "git+https://github.com/Zaptic/saml.git"
     },
     "keywords": [
         "saml"
