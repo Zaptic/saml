@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Migrate from libxmljs to libxmljs2
+- Update xml2js to v0.6.2
+- Update prettier and TypeScript
+
 ## [3.0.0] - 2023/06/14
 
 ## [2.0.8] - 2023/04/07
@@ -50,7 +54,7 @@
 - `xmldsig-core-schema.xsd` `X509SerialNumber` is now a string. There is an issue with the c library we
   are relying on to check the xsd. That issue is due to the fact that the specs for xsd allow limiting
   the max integer size depending on the processor the checks are running on but at the same time allow
-  for unlimited length integers.  
+  for unlimited length integers.
   This is documented here because it's an important change to the standard
   schema.
 

@@ -18,7 +18,7 @@ describe('Crypto.checkSignature', function () {
         'NprOyXi7ZbUqiicF89uAGyt1oqgTUCD1VsLahqIcmrzgumNyTwLGWo17WDAa1/usDhetWAMhgzF/Cnf5ek0nK00m0Y' +
         'ZGyc4LzgD0CROMASTWNg=='
 
-    const validOptions = { allowedCertificates: [allowedCertificate], algorithm: <'sha1'>'sha1' }
+    const validOptions = { allowedCertificates: [allowedCertificate], algorithm: 'sha1' as const }
 
     it('should should not throw when validating a correctly signed assertion', async function () {
         assert.doesNotThrow(() => checkSignature(signedAssertion(), validOptions))
