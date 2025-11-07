@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.1] - 2025/11/07
+
 - Migrate from libxmljs to libxmljs2
 - Update xml2js to v0.6.2
 - Update prettier and TypeScript
